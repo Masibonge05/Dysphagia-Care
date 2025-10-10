@@ -28,9 +28,9 @@ class Welcome1 extends StatelessWidget {
           child: SafeArea(
             child: Center(
               child: Image.asset(
-                'assets/images/logo_new.png',
-                width: 150,
-                height: 150,
+                'assets/images/dysphagia_care.png',
+                width: 250,
+                height: 250,
                 fit: BoxFit.contain,
               ),
             ),
