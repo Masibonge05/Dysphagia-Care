@@ -350,13 +350,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                       textAlign: TextAlign.center,
                                     ),
                                     const SizedBox(height: 16),
-                                    Text(
-                                      'Debug: User ID = $_currentUserId',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.blue,
-                                      ),
-                                    ),
                                   ],
                                 ),
                               );
