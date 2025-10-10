@@ -1,6 +1,6 @@
 //new code with complete functionality
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase import
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase import hhaybo
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
