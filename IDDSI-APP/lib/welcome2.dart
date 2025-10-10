@@ -43,12 +43,6 @@ class Welcome2 extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    // Main IDDSI image in the middle
-                    Image.asset(
-                      'assets/images/iddsi_new.png',
-                      height: 250, // Increased size
-                    ),
-                    const SizedBox(height: 40),
                     const Text(
                       'Welcome To',
                       style: TextStyle(
@@ -57,50 +51,15 @@ class Welcome2 extends StatelessWidget {
                         color: Color(0xFF01224F),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Large "iddsi" text logo
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'id',
-                          style: TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0175BC),
-                          ),
-                        ),
-                        Text(
-                          'dsi',
-                          style: TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF4BB2E3),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'International Dysphagia Diet Standardisation Initiative',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF01224F),
+                    // Negative spacing to pull image closer
+                    Transform.translate(
+                      offset: const Offset(0, -20), // Pull up by 20 pixels
+                      child: Image.asset(
+                        'assets/images/dysphagia_care2.png',
+                        height: 300,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'South Africa',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF01224F),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 40),
-
+                    
                     const Text(
                       'Powered By',
                       style: TextStyle(
@@ -113,15 +72,10 @@ class Welcome2 extends StatelessWidget {
 
                     // Bottom logos row
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 5f),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // IDDSI Logo
-                          Image.asset(
-                            'assets/iddsi-logo.png',
-                            height: 70,
-                          ),
                           const SizedBox(width: 40),
                           // Speech Logo
                           Image.asset(
