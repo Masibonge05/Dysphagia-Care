@@ -88,6 +88,7 @@ flutter:
 
   assets:
     - assets/iddsi-logo.png
+    - assets/food/
     - assets/speech.logo.png
     - assets/background.png
     - assets/menu_icon.svg
