@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'language_selection.dart'; // Import the language selection page
+import 'language_selection.dart';
 
 class IDDSIPersonalInfoPage extends StatefulWidget {
   const IDDSIPersonalInfoPage({super.key});
@@ -16,7 +16,7 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  String? selectedLevel; // Only one level can be selected total
+  String? selectedLevel;
   bool isLoading = false;
 
   // All level options combined
@@ -87,33 +87,39 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
 
         await _firestore.collection('users').doc(user.uid).set(userData, SetOptions(merge: true));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Personal information saved successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Personal information saved successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-        // Navigate to language selection page
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(builder: (context) => const LanguageSelectionPage())
-        );
+          // Navigate to language selection page
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const LanguageSelectionPage())
+          );
+        }
         
       } else {
         throw Exception('User not authenticated');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving information: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving information: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -197,121 +203,121 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              const Text(
-                'Personal Information',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF01224F),
-                ),
-              ),
-              const SizedBox(height: 30),
-              
-              // Name Input Field
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF00529A), width: 2),
-                ),
-                child: TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Insert Name',
-                    hintStyle: TextStyle(color: Color(0xFF00529A)),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF01224F),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Age Input Field
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF00529A), width: 2),
-                ),
-                child: TextField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    hintText: 'Insert Age',
-                    hintStyle: TextStyle(color: Color(0xFF00529A)),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF01224F),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              
-              const Text(
-                'Please Select Your Level (Choose Only One)',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF01224F),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Fluids Section
-              _buildRadioGroup('Fluids', fluidLevels),
-              const SizedBox(height: 24),
-              
-              // Food Section
-              _buildRadioGroup('Food', foodLevels),
-              const SizedBox(height: 40),
-              
-              // Continue Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF01224F),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Personal Information',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF01224F),
                     ),
-                    elevation: 2,
                   ),
-                  onPressed: isLoading ? null : _savePersonalInfo,
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Continue',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  const SizedBox(height: 30),
+                  
+                  // Name Input Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF00529A), width: 2),
+                    ),
+                    child: TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        hintText: 'Insert Name',
+                        hintStyle: TextStyle(color: Color(0xFF00529A)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF01224F),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Age Input Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF00529A), width: 2),
+                    ),
+                    child: TextField(
+                      controller: _ageController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        hintText: 'Insert Age',
+                        hintStyle: TextStyle(color: Color(0xFF00529A)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF01224F),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  const Text(
+                    'Please Select Your Level (Choose Only One)',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF01224F),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Fluids Section
+                  _buildRadioGroup('Fluids', fluidLevels),
+                  const SizedBox(height: 24),
+                  
+                  // Food Section
+                  _buildRadioGroup('Food', foodLevels),
+                  const SizedBox(height: 40),
+                  
+                  // Continue Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF01224F),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                ),
+                        elevation: 2,
+                      ),
+                      onPressed: isLoading ? null : _savePersonalInfo,
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Continue',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
-        ),
-      ),
         ],
       ),
     );

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-
-
+import 'screens/fullscreen_image_page.dart';
 
 class LevelOptionsPage extends StatelessWidget {
   final int levelNumber;
@@ -35,9 +33,11 @@ class LevelOptionsPage extends StatelessWidget {
                 const SizedBox(height: 10),
                 // Custom Header (similar to LevelDetailPage)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                   decoration: BoxDecoration(
-                    color: _getLevelColor(levelNumber, levelType), // Function to get color based on level
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 10.0),
+                  decoration: BoxDecoration(
+                    color: _getLevelColor(levelNumber,
+                        levelType), // Function to get color based on level
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30.0),
                       bottomLeft: Radius.circular(30.0),
@@ -53,11 +53,14 @@ class LevelOptionsPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: _getTextColor(levelNumber, levelType), // Adjust text color based on background
+                          color: _getTextColor(levelNumber,
+                              levelType), // Adjust text color based on background
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.arrow_back_ios_new_rounded, color: _getTextColor(levelNumber, levelType)), // Adjust icon color
+                        icon: Icon(Icons.arrow_back_ios_new_rounded,
+                            color: _getTextColor(
+                                levelNumber, levelType)), // Adjust icon color
                         onPressed: () {
                           Navigator.pop(context);
                         },
@@ -72,56 +75,73 @@ class LevelOptionsPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Options will be added here
-                         _buildOptionButton(context, 'Testing', () {
-                             // Navigate to Testing page or display image
-                              Navigator.pushNamed(
-                                context,
-                                '/level${levelNumber}_${levelType.toLowerCase()}_testing', // This route now maps to LevelDetailPage with showTesting: true
-                                arguments: {
-                                  'levelNumber': levelNumber,
-                                  'levelType': levelType,
-                                  'pageTitle': pageTitle,
-                                  'showTesting': true,
-                                  'showTestingMethods': false, // Ensure testing methods are not shown
-                                },
-                              );
-
-                         }),
+                        _buildOptionButton(context, 'Testing', () {
+                          if (levelNumber == 0 && levelType == 'Fluid') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const FullScreenImagePage(
+                                  imagePath:
+                                      'assets/images/level_0_testing.png',
+                                ),
+                              ),
+                            );
+                          } else {
+                            Navigator.pushNamed(
+                              context,
+                              '/level${levelNumber}_${levelType.toLowerCase()}_testing', // This route now maps to LevelDetailPage with showTesting: true
+                              arguments: {
+                                'levelNumber': levelNumber,
+                                'levelType': levelType,
+                                'pageTitle': pageTitle,
+                                'showTesting': true,
+                                'showTestingMethods':
+                                    false, // Ensure testing methods are not shown
+                              },
+                            );
+                          }
+                        }),
                         const SizedBox(height: 10),
                         _buildOptionButton(context, 'Testing Methods', () {
                           // Navigate to LevelDetailPage to show formatted testing methods
-                           Navigator.pushNamed(
+                          Navigator.pushNamed(
                             context,
                             '/level${levelNumber}_${levelType.toLowerCase()}_testingmethods', // New route for testing methods view
-                             arguments: {
-                                  'levelNumber': levelNumber,
-                                  'levelType': levelType,
-                                  'pageTitle': pageTitle,
-                                  'showTesting': false, // Ensure testing image/steps are not shown
-                                  'showTestingMethods': true, // Show testing methods
-                                },
+                            arguments: {
+                              'levelNumber': levelNumber,
+                              'levelType': levelType,
+                              'pageTitle': pageTitle,
+                              'showTesting':
+                                  false, // Ensure testing image/steps are not shown
+                              'showTestingMethods':
+                                  true, // Show testing methods
+                            },
                           );
-
                         }),
                         // Add other options as needed
-                         if ((levelNumber == 3 || levelNumber == 4) && levelType == 'Food') // Add Level 4 check
-                         const SizedBox(height: 10),
-                         if ((levelNumber == 3 || levelNumber == 4) && levelType == 'Food') // Add Level 4 check
-                         _buildOptionButton(context, 'Food Specific', () {
-                           // Navigate to Food Specific information page
+                        if ((levelNumber == 3 || levelNumber == 4) &&
+                            levelType == 'Food') // Add Level 4 check
+                          const SizedBox(height: 10),
+                        if ((levelNumber == 3 || levelNumber == 4) &&
+                            levelType == 'Food') // Add Level 4 check
+                          _buildOptionButton(context, 'Food Specific', () {
+                            // Navigate to Food Specific information page
                             Navigator.pushNamed(
-                            context,
-                            '/level${levelNumber}_${levelType.toLowerCase()}_foodspecific', // New route for Food Specific view
-                             arguments: {
-                                  'levelNumber': levelNumber,
-                                  'levelType': levelType,
-                                  'pageTitle': pageTitle,
-                                  'showTesting': false, // Ensure testing image/steps are not shown
-                                  'showTestingMethods': false, // Ensure testing methods are not shown
-                                  'showFoodSpecific': true, // Show Food Specific content
-                                },
-                          );
-                         }),
+                              context,
+                              '/level${levelNumber}_${levelType.toLowerCase()}_foodspecific', // New route for Food Specific view
+                              arguments: {
+                                'levelNumber': levelNumber,
+                                'levelType': levelType,
+                                'pageTitle': pageTitle,
+                                'showTesting':
+                                    false, // Ensure testing image/steps are not shown
+                                'showTestingMethods':
+                                    false, // Ensure testing methods are not shown
+                                'showFoodSpecific':
+                                    true, // Show Food Specific content
+                              },
+                            );
+                          }),
                       ],
                     ),
                   ),
@@ -131,7 +151,7 @@ class LevelOptionsPage extends StatelessWidget {
           ),
         ),
       ),
-       bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFF368DF3),
@@ -160,7 +180,8 @@ class LevelOptionsPage extends StatelessWidget {
       ),
     );
   }
-   Color _getLevelColor(int levelNumber, String levelType) {
+
+  Color _getLevelColor(int levelNumber, String levelType) {
     if (levelType == 'Fluid') {
       switch (levelNumber) {
         case 0:
@@ -177,7 +198,7 @@ class LevelOptionsPage extends StatelessWidget {
           return Colors.blue;
       }
     } else if (levelType == 'Food') {
-       switch (levelNumber) {
+      switch (levelNumber) {
         case 3:
           return const Color(0xFFE8D900);
         case 4:
@@ -190,28 +211,29 @@ class LevelOptionsPage extends StatelessWidget {
           return const Color(0xFF2E2E31);
         default:
           return Colors.orange;
-       }
+      }
     }
     return Colors.grey;
   }
 
-    Color _getTextColor(int levelNumber, String levelType) {
-     if (levelNumber == 0 && levelType == 'Fluid') {
+  Color _getTextColor(int levelNumber, String levelType) {
+    if (levelNumber == 0 && levelType == 'Fluid') {
       return Colors.black87;
     } else {
       return Colors.white;
     }
   }
 
-
-  Widget _buildOptionButton(BuildContext context, String text, VoidCallback onTap) {
+  Widget _buildOptionButton(
+      BuildContext context, String text, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity, // Take full width
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8), // White background with some transparency
+          color: Colors.white
+              .withOpacity(0.8), // White background with some transparency
           borderRadius: BorderRadius.circular(12.0), // Rounded corners
         ),
         child: Text(
@@ -225,4 +247,4 @@ class LevelOptionsPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

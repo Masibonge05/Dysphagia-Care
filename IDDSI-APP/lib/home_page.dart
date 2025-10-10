@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-//import 'dart:math';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'notifications.dart';
-//user
+import 'level_data.dart'; // Import the new level data file
+
 // Imported Pages
 import 'mood_emoji.dart';
 import 'package:iddsi_app/what_is_iddsi_page.dart';
@@ -36,29 +36,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _userName = 'User';
   String? _currentUserId;
   int _unreadNotificationCount = 0;
-
-  final List<Map<String, dynamic>> foodItems = [
-    {
-      'image': 'assets/food/smooth_maize_porride.png',
-      'name': 'Smooth Maize Porridge',
-    },
-    {
-      'image': 'assets/food/liquidised_shicken_soup.png',
-      'name': 'Liquidised Chicken Soup',
-    },
-    {
-      'image': 'assets/food/custard.png',
-      'name': 'Smooth Custard',
-    },
-    {
-      'image': 'assets/food/mageu.png',
-      'name': 'Traditional Mageu',
-    },
-    {
-      'image': 'assets/food/pureed_vegetable_curry.png',
-      'name': 'Pureed Vegetable Curry',
-    },
-  ];
+  String? _selectedLevel; // Store the selected level value
+  LevelData? _currentLevelData; // Store the level data
+  List<FoodSuggestion> _foodSuggestions = []; // Store food suggestions
 
   @override
   void initState() {
@@ -71,7 +51,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         vsync: this,
       ),
     );
-   
   }
 
   Future<void> _getCurrentUser() async {
@@ -96,6 +75,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
         setState(() {
           _userName = userData['name'] ?? widget.userName;
+          _selectedLevel = userData['selectedLevel'];
+          
+          // Load level data
+          if (_selectedLevel != null) {
+            _currentLevelData = LevelDataProvider.getLevelData(_selectedLevel!);
+            _foodSuggestions = _currentLevelData?.foodSuggestions ?? [];
+          }
         });
       } else {
         setState(() {
@@ -127,11 +113,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _navigateToNotifications() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const NotificationsPage()),
-  );
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsPage()),
+    );
+  }
 
   @override
   void dispose() {
@@ -177,25 +163,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: Color(0xFF44157F), // Use a color similar to your theme
+                color: Color(0xFF44157F),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Image.asset(
-                    'assets/iddsi-logo.png', // Your IDDSI logo path
+                    'assets/iddsi-logo.png',
                     height: 60,
                   ),
-                  // You can add a SizedBox or Text below the logo if needed
                 ],
               ),
             ),
             ListTile(
               leading: Image.asset('assets/icons/Vector (2).png',
-                  width: 24, height: 24), // What is IDDSI icon
+                  width: 24, height: 24),
               title: const Text('What is the IDDSI?'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -204,10 +189,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             ListTile(
               leading: Image.asset('assets/icons/Vector (3).png',
-                  width: 24, height: 24), // What is Dysphagia icon
+                  width: 24, height: 24),
               title: const Text('What is Dysphagia'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -216,10 +201,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             ListTile(
               leading: Image.asset('assets/icons/Vector (4).png',
-                  width: 24, height: 24), // Disclaimer icon
+                  width: 24, height: 24),
               title: const Text('Disclaimer'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -228,17 +213,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             ListTile(
               leading: Image.asset('assets/icons/Vector.png',
-                  width: 24, height: 24), // Signs and Symptoms icon
+                  width: 24, height: 24),
               title: const Text('Signs and Symptoms'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SignsSymptomsPage()));
               },
             ),
-            // Add more ListTiles for other menu items as needed
           ],
         ),
       ),
@@ -323,7 +307,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     size: 24,
                                   ),
                                 ),
-                                // Notification badge
                                 if (_unreadNotificationCount > 0)
                                   Positioned(
                                     right: 2,
@@ -358,8 +341,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           const SizedBox(width: 10),
                           GestureDetector(
                             onTap: () {
-                              Scaffold.of(context)
-                                  .openDrawer(); // Open the drawer
+                              Scaffold.of(context).openDrawer();
                             },
                             child: Container(
                               width: 45,
@@ -378,7 +360,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ],
                       ),
                       const SizedBox(height: 25),
-                      // Search bar - Navigate to SearchPage when tapped
+                      // Search bar
                       GestureDetector(
                         onTap: _navigateToSearch,
                         child: Container(
@@ -431,19 +413,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       const SizedBox(height: 15),
                       const EmojiAnimationSelector(),
                       const SizedBox(height: 20),
-                      /*Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildMoodIcon(0),
-                          _buildMoodIcon(1),
-                          _buildMoodIcon(2),
-                          _buildMoodIcon(3),
-                          _buildMoodIcon(4),
-                        ],
-                      ),*/
                       const SizedBox(height: 25),
 
-                      // Current Saved Level
+                      // Current Saved Level - Dynamic
                       const Text(
                         'Current Saved Level',
                         style: TextStyle(
@@ -470,18 +442,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 Container(
                                   width: 35,
                                   height: 35,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFFD700),
+                                  decoration: BoxDecoration(
+                                    color: _currentLevelData?.color ?? const Color(0xFFFFD700),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
                                 const SizedBox(width: 18),
-                                const Text(
-                                  'Level 3: Moderately Thick',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
+                                Expanded(
+                                  child: Text(
+                                    _currentLevelData?.label ?? 'No Level Selected',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -491,7 +465,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 25),
 
-                      // Food Suggestions
+                      // Food Suggestions - Dynamic
                       const Text(
                         'Food Suggestions',
                         style: TextStyle(
@@ -513,20 +487,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               horizontal: 20, vertical: 12),
                           child: Row(
                             children: [
-                              const Text(
-                                'Level 3: Moderately Thick',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                              Expanded(
+                                child: Text(
+                                  _currentLevelData?.label ?? 'No Level Selected',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(width: 10),
                               Container(
                                 width: 25,
                                 height: 25,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFFD700),
+                                decoration: BoxDecoration(
+                                  color: _currentLevelData?.color ?? const Color(0xFFFFD700),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -536,105 +512,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 20),
 
-                      // Food items - Show 2 at a time with smooth sliding
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFFB0E0E6), // Powder blue background
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 200,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Stack(
-                                children: [
-                                  PageView.builder(
-                                    controller: _foodPageController,
-                                    onPageChanged: (index) {
-                                      setState(() {
-                                        currentFoodIndex = index;
-                                      });
-                                    },
-                                    itemCount: foodItems.length > 1
-                                        ? foodItems.length - 1
-                                        : 1,
-                                    itemBuilder: (context, pageIndex) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20),
-                                        child: Row(
-                                          children: [
-                                            // First food item
-                                            Expanded(
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width: 120,
-                                                    height: 120,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: Colors.transparent,
-                                                    ),
-                                                    child: ClipOval(
-                                                      child: Image.asset(
-                                                        foodItems[pageIndex]
-                                                            ['image'],
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (context,
-                                                            error, stackTrace) {
-                                                          return Container(
-                                                            decoration:
-                                                                const BoxDecoration(
-                                                              color: Color(
-                                                                  0xFF44157F),
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                            ),
-                                                            child: const Icon(
-                                                              Icons.fastfood,
-                                                              color:
-                                                                  Colors.white,
-                                                              size: 40,
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 12),
-                                                  Text(
-                                                    foodItems[pageIndex]
-                                                        ['name'],
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Color(0xFF333333),
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 20),
-                                            // Second food item
-                                            if (pageIndex + 1 <
-                                                foodItems.length)
+                      // Food items - Dynamic based on level
+                      if (_foodSuggestions.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFB0E0E6),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                height: 200,
+                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                child: Stack(
+                                  children: [
+                                    PageView.builder(
+                                      controller: _foodPageController,
+                                      onPageChanged: (index) {
+                                        setState(() {
+                                          currentFoodIndex = index;
+                                        });
+                                      },
+                                      itemCount: _foodSuggestions.length > 1
+                                          ? (_foodSuggestions.length / 2).ceil()
+                                          : 1,
+                                      itemBuilder: (context, pageIndex) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: Row(
+                                            children: [
+                                              // First food item
                                               Expanded(
                                                 child: Column(
                                                   children: [
@@ -644,17 +561,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                       decoration:
                                                           const BoxDecoration(
                                                         shape: BoxShape.circle,
-                                                        color:
-                                                            Colors.transparent,
+                                                        color: Colors.transparent,
                                                       ),
                                                       child: ClipOval(
                                                         child: Image.asset(
-                                                          foodItems[pageIndex +
-                                                              1]['image'],
+                                                          _foodSuggestions[pageIndex * 2]
+                                                              .image,
                                                           fit: BoxFit.cover,
-                                                          errorBuilder:
-                                                              (context, error,
-                                                                  stackTrace) {
+                                                          errorBuilder: (context,
+                                                              error, stackTrace) {
                                                             return Container(
                                                               decoration:
                                                                   const BoxDecoration(
@@ -665,8 +580,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                               ),
                                                               child: const Icon(
                                                                 Icons.fastfood,
-                                                                color: Colors
-                                                                    .white,
+                                                                color:
+                                                                    Colors.white,
                                                                 size: 40,
                                                               ),
                                                             );
@@ -676,124 +591,205 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                     ),
                                                     const SizedBox(height: 12),
                                                     Text(
-                                                      foodItems[pageIndex + 1]
-                                                          ['name'],
+                                                      _foodSuggestions[pageIndex * 2]
+                                                          .name,
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        color:
-                                                            Color(0xFF333333),
+                                                        color: Color(0xFF333333),
                                                       ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                      textAlign: TextAlign.center,
                                                       maxLines: 2,
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                     ),
                                                   ],
                                                 ),
-                                              )
-                                            else
-                                              const Expanded(
-                                                  child:
-                                                      SizedBox()), // Empty space if no second item
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  // Left tap area for going to previous page
-                                  if (currentFoodIndex > 0)
-                                    Positioned(
-                                      left: 0,
-                                      top: 0,
-                                      bottom: 0,
-                                      width: 80,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          if (currentFoodIndex > 0) {
-                                            _foodPageController.previousPage(
-                                              duration: const Duration(
-                                                  milliseconds: 300),
-                                              curve: Curves.easeInOut,
-                                            );
-                                          }
-                                        },
-                                        child: Container(
-                                          color: Colors.transparent,
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.chevron_left,
-                                              color: Colors.grey,
-                                              size: 30,
+                                              ),
+                                              const SizedBox(width: 20),
+                                              // Second food item
+                                              if (pageIndex * 2 + 1 <
+                                                  _foodSuggestions.length)
+                                                Expanded(
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        width: 120,
+                                                        height: 120,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          shape: BoxShape.circle,
+                                                          color:
+                                                              Colors.transparent,
+                                                        ),
+                                                        child: ClipOval(
+                                                          child: Image.asset(
+                                                            _foodSuggestions[pageIndex * 2 + 1]
+                                                                .image,
+                                                            fit: BoxFit.cover,
+                                                            errorBuilder:
+                                                                (context, error,
+                                                                    stackTrace) {
+                                                              return Container(
+                                                                decoration:
+                                                                    const BoxDecoration(
+                                                                  color: Color(
+                                                                      0xFF44157F),
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                ),
+                                                                child: const Icon(
+                                                                  Icons.fastfood,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 40,
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 12),
+                                                      Text(
+                                                        _foodSuggestions[pageIndex * 2 + 1]
+                                                            .name,
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              Color(0xFF333333),
+                                                        ),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        maxLines: 2,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              else
+                                                const Expanded(
+                                                    child: SizedBox()),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    // Left tap area for going to previous page
+                                    if (currentFoodIndex > 0)
+                                      Positioned(
+                                        left: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        width: 80,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (currentFoodIndex > 0) {
+                                              _foodPageController.previousPage(
+                                                duration: const Duration(
+                                                    milliseconds: 300),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            }
+                                          },
+                                          child: Container(
+                                            color: Colors.transparent,
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.chevron_left,
+                                                color: Colors.grey,
+                                                size: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  // Right tap area for going to next page
-                                  if (currentFoodIndex <
-                                      (foodItems.length > 1
-                                          ? foodItems.length - 2
-                                          : 0))
-                                    Positioned(
-                                      right: 0,
-                                      top: 0,
-                                      bottom: 0,
-                                      width: 80,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          if (currentFoodIndex <
-                                              (foodItems.length > 1
-                                                  ? foodItems.length - 2
-                                                  : 0)) {
-                                            _foodPageController.nextPage(
-                                              duration: const Duration(
-                                                  milliseconds: 300),
-                                              curve: Curves.easeInOut,
-                                            );
-                                          }
-                                        },
-                                        child: Container(
-                                          color: Colors.transparent,
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.chevron_right,
-                                              color: Colors.grey,
-                                              size: 30,
+                                    // Right tap area for going to next page
+                                    if (currentFoodIndex <
+                                        (_foodSuggestions.length > 1
+                                            ? (_foodSuggestions.length / 2).ceil() - 1
+                                            : 0))
+                                      Positioned(
+                                        right: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        width: 80,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (currentFoodIndex <
+                                                (_foodSuggestions.length > 1
+                                                    ? (_foodSuggestions.length / 2).ceil() - 1
+                                                    : 0)) {
+                                              _foodPageController.nextPage(
+                                                duration: const Duration(
+                                                    milliseconds: 300),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            }
+                                          },
+                                          child: Container(
+                                            color: Colors.transparent,
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.chevron_right,
+                                                color: Colors.grey,
+                                                size: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            // Page indicator dots
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                foodItems.length > 1 ? foodItems.length - 1 : 1,
-                                (index) => Container(
-                                  width: 8,
-                                  height: 8,
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: currentFoodIndex == index
-                                        ? const Color(0xFF44157F)
-                                        : Colors.grey.shade300,
+                              // Page indicator dots
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  _foodSuggestions.length > 1 
+                                      ? (_foodSuggestions.length / 2).ceil() 
+                                      : 1,
+                                  (index) => Container(
+                                    width: 8,
+                                    height: 8,
+                                    margin:
+                                        const EdgeInsets.symmetric(horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: currentFoodIndex == index
+                                          ? const Color(0xFF44157F)
+                                          : Colors.grey.shade300,
+                                    ),
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 15),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFB0E0E6),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'No food suggestions available.\nPlease select your level in settings.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF333333),
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 15),
-                          ],
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 25),
 
                       // Learn section
@@ -893,6 +889,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
+
   Widget _buildLearnButton(String text, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
