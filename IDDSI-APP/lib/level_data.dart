@@ -39,7 +39,7 @@ class LevelDataProvider {
       color: const Color.fromARGB(255, 255, 255, 255), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/apple_juice.jpg',
+          image: 'assets/food/apple_juice.png',
           name: 'Apple Juice',
         ),
         FoodSuggestion(
@@ -47,11 +47,11 @@ class LevelDataProvider {
           name: 'Milk',
         ),
         FoodSuggestion(
-          image: 'assets/food/tea.jpg',
+          image: 'assets/food/tea.png',
           name: 'Tea',
         ),
         FoodSuggestion(
-          image: 'assets/food/coffee.jpg',
+          image: 'assets/food/coffee.png',
           name: 'Coffee',
         ),
         FoodSuggestion(
@@ -107,27 +107,11 @@ class LevelDataProvider {
           image: 'assets/food/thick_smoothie.png',
           name: 'Thick Smoothie',
         ),
-        FoodSuggestion(
-          image: 'assets/food/thick_juice.png',
-          name: 'Mildly Thick Juice',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/drinking_yogurt.png',
-          name: 'Drinking Yogurt',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/thick_milkshake.png',
-          name: 'Thick Milkshake',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/thick_soup.png',
-          name: 'Cream Soup',
-        ),
       ],
     ),
 
 
-    
+
     'fluid_3': LevelData(
       value: 'fluid_3',
       label: 'Level 3: Moderately Thick',
@@ -136,27 +120,25 @@ class LevelDataProvider {
       color: const Color(0xFFE8D900), // Gold
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/smooth_maize_porride.png',
-          name: 'Smooth Maize Porridge',
+          image: 'assets/food/purity_peach.jpeg',
+          name: 'Purity Peach',
         ),
         FoodSuggestion(
-          image: 'assets/food/liquidised_shicken_soup.png',
-          name: 'Liquidised Chicken Soup',
+          image: 'assets/food/clover_custard.png',
+          name: 'Clover Custard',
         ),
         FoodSuggestion(
-          image: 'assets/food/custard.png',
-          name: 'Smooth Custard',
+          image: 'assets/food/yogi_sip.jpeg',
+          name: 'Yogi Sip',
         ),
         FoodSuggestion(
           image: 'assets/food/mageu.png',
-          name: 'Traditional Mageu',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/pureed_vegetable_curry.png',
-          name: 'Pureed Vegetable Curry',
+          name: 'Mageu',
         ),
       ],
     ),
+
+
     'fluid_4': LevelData(
       value: 'fluid_4',
       label: 'Level 4: Extremely Thick',
@@ -165,27 +147,21 @@ class LevelDataProvider {
       color: const Color(0xFF76C04F), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/thick_custard.png',
-          name: 'Thick Custard',
+          image: 'assets/food/mashed_potatoes.jpg',
+          name: 'Mashed Potatoes',
         ),
         FoodSuggestion(
-          image: 'assets/food/thick_yogurt.png',
-          name: 'Thick Yogurt',
+          image: 'assets/food/mashed_bananas.jpg',
+          name: 'Mashed Bananas',
         ),
         FoodSuggestion(
-          image: 'assets/food/thick_porridge.png',
-          name: 'Thick Porridge',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/pudding.png',
-          name: 'Pudding',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/mousse.png',
-          name: 'Mousse',
+          image: 'assets/food/purity_vegetable_beef.webp',
+          name: 'Purity Vegetable and Beef',
         ),
       ],
     ),
+
+
 
     // Food Levels
     'food_3': LevelData(
@@ -196,27 +172,26 @@ class LevelDataProvider {
       color: const Color(0xFFE8D900), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/liquidised_vegetables.png',
-          name: 'Liquidised Vegetables',
+          image: 'assets/food/purity_peach.jpeg',
+          name: 'Purity Peach',
         ),
         FoodSuggestion(
-          image: 'assets/food/smooth_soup.png',
-          name: 'Smooth Soup',
+          image: 'assets/food/clover_custard.png',
+          name: 'Clover Custard',
         ),
         FoodSuggestion(
-          image: 'assets/food/liquidised_fruit.png',
-          name: 'Liquidised Fruit',
+          image: 'assets/food/yogi_sip.jpeg',
+          name: 'Yogi Sip',
         ),
         FoodSuggestion(
-          image: 'assets/food/smooth_porridge.png',
-          name: 'Smooth Porridge',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/liquidised_meat.png',
-          name: 'Liquidised Meat',
+          image: 'assets/food/mageu.png',
+          name: 'Mageu',
         ),
       ],
     ),
+
+
+
     'food_4': LevelData(
       value: 'food_4',
       label: 'Level 4: Puréed',
@@ -225,27 +200,22 @@ class LevelDataProvider {
       color: const Color(0xFF76C04F), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/pureed_vegetables.png',
-          name: 'Puréed Vegetables',
+          image: 'assets/food/mashed_potatoes.jpg',
+          name: 'Mashed Potatoes',
         ),
         FoodSuggestion(
-          image: 'assets/food/mashed_potato.png',
-          name: 'Smooth Mashed Potato',
+          image: 'assets/food/mashed_bananas.jpg',
+          name: 'Mashed Bananas',
         ),
         FoodSuggestion(
-          image: 'assets/food/pureed_meat.png',
-          name: 'Puréed Meat',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/pureed_fruit.png',
-          name: 'Puréed Fruit',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/hummus.png',
-          name: 'Smooth Hummus',
+          image: 'assets/food/purity_vegetable_beef.webp',
+          name: 'Purity Vegetable and Beef',
         ),
       ],
     ),
+
+
+
     'food_5': LevelData(
       value: 'food_5',
       label: 'Level 5: Minced and Moist',
@@ -254,27 +224,18 @@ class LevelDataProvider {
       color: const Color(0xFFF0763D), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/minced_meat.png',
-          name: 'Minced Meat with Gravy',
+          image: 'assets/food/mashed_papaya.jpg',
+          name: 'Mashed Papaya',
         ),
         FoodSuggestion(
-          image: 'assets/food/cottage_pie.png',
-          name: 'Cottage Pie',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/scrambled_eggs.png',
-          name: 'Soft Scrambled Eggs',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/moist_casserole.png',
-          name: 'Moist Casserole',
-        ),
-        FoodSuggestion(
-          image: 'assets/food/soft_vegetables.png',
-          name: 'Soft Cooked Vegetables',
+          image: 'assets/food/mince.jpg',
+          name: 'Mince',
         ),
       ],
     ),
+
+
+
     'food_6': LevelData(
       value: 'food_6',
       label: 'Level 6: Soft and Bite-Sized',
@@ -283,27 +244,40 @@ class LevelDataProvider {
       color: const Color(0xFF0175BC), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/soft_pasta.png',
-          name: 'Soft Pasta',
+          image: 'assets/food/soft_vegetables.jpg',
+          name: 'Soft Vegetables',
         ),
         FoodSuggestion(
-          image: 'assets/food/soft_fish.png',
-          name: 'Flaky Fish',
+          image: 'assets/food/samp.webp',
+          name: 'Samp',
         ),
         FoodSuggestion(
-          image: 'assets/food/tender_chicken.png',
-          name: 'Tender Chicken',
+          image: 'assets/food/pap.jpeg',
+          name: 'Pap',
         ),
         FoodSuggestion(
-          image: 'assets/food/soft_bread.png',
-          name: 'Soft Bread',
+          image: 'assets/food/bread.jpg',
+          name: 'Bread',
         ),
         FoodSuggestion(
-          image: 'assets/food/ripe_banana.png',
-          name: 'Ripe Banana',
+          image: 'assets/food/shredded_chicken.jpg',
+          name: 'Shredded Chicken',
+        ),
+        FoodSuggestion(
+          image: 'assets/food/weetabix.png',
+          name: 'Weetbix',
+        ),
+        FoodSuggestion(
+          image: 'assets/food/rice.jpg',
+          name: 'Rice',
         ),
       ],
     ),
+
+
+
+
+
     'food_7': LevelData(
       value: 'food_7',
       label: 'Level 7: Regular',
@@ -312,25 +286,26 @@ class LevelDataProvider {
       color: const Color(0xFF2E2E31), 
       foodSuggestions: [
         FoodSuggestion(
-          image: 'assets/food/regular_food.png',
-          name: 'Regular Diet',
+          image: 'assets/food/fried_rice.jpg',
+          name: 'Fried Rice',
         ),
         FoodSuggestion(
-          image: 'assets/food/steak.png',
-          name: 'Steak',
+          image: 'assets/food/vegetarian_stew.png',
+          name: 'Vegetarian Stew',
         ),
         FoodSuggestion(
-          image: 'assets/food/fresh_salad.png',
-          name: 'Fresh Salad',
+          image: 'assets/food/potato_chips.jpg',
+          name: 'Potato Chips',
         ),
         FoodSuggestion(
-          image: 'assets/food/crusty_bread.png',
-          name: 'Crusty Bread',
+          image: 'assets/food/burger.jpg',
+          name: 'Burger',
         ),
         FoodSuggestion(
-          image: 'assets/food/raw_vegetables.png',
-          name: 'Raw Vegetables',
+          image: 'assets/food/fried_chicken.jpg',
+          name: 'Fried Chicken',
         ),
+
       ],
     ),
   };

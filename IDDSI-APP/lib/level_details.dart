@@ -482,12 +482,82 @@ class LevelDetailsPage extends StatelessWidget {
 
   // Placeholder for Food Specific content
   List<Widget> _getFoodSpecificContent(int levelNumber, String levelType) {
-    // You will need to replace this with actual food specific information
-    return [
-      Text('Food Specific content for Level $levelNumber ($levelType)'),
-      const Text('Information specific to food items at this level.'),
-      const Text('Considerations for preparing and consuming food.'),
-    ];
+    // Match Testing Methods styling (same fonts and background)
+    Widget buildStyledTextContainer(String subheading, String content) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Text(
+              subheading,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF01224F),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFB3E5FC),
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: Text(
+                content,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      );
+    }
+
+    if (levelType == 'Food' && levelNumber == 5) {
+      return [
+        buildStyledTextContainer('Level 5 – Minced & Moist', 'Food Specific or Other Examples'),
+        buildStyledTextContainer('MEAT', '• Finely minced or chopped, soft mince\n• Paediatric: ≤ 2 mm width and ≤ 8 mm length\n• Adult: ≤ 4 mm width and ≤ 15 mm length\n• Serve in mildly, moderately or extremely thick, smooth sauce or gravy; drain excess\n• If texture cannot be finely minced it should be pureed'),
+        buildStyledTextContainer('FISH', '• Finely mashed in mildly, moderately or extremely thick smooth sauce or gravy; drain excess\n• Paediatric: ≤ 2 mm width and ≤ 8 mm length\n• Adult: ≤ 4 mm width and ≤ 15 mm length'),
+        buildStyledTextContainer('FRUIT', '• Serve finely minced or chopped or mashed\n• Drain excess juice\n• If needed, serve in mildly, moderately or extremely thick smooth sauce or gravy AND drain excess liquid. No thin liquid should separate from food\n• Paediatric: ≤ 2 mm width and ≤ 8 mm length\n• Adult: ≤ 4 mm width and ≤ 15 mm length'),
+        buildStyledTextContainer('VEGETABLES', '• Serve finely minced or chopped or mashed\n• Drain any liquid\n• If needed, serve in mildly, moderately or extremely thick smooth sauce or gravy AND drain excess liquid. No thin liquid should separate from food\n• Paediatric: ≤ 2 mm width and ≤ 8 mm length\n• Adult: ≤ 4 mm width and ≤ 15 mm length'),
+        buildStyledTextContainer('CEREAL', '• Thick and smooth with small soft lumps\n• Paediatric: ≤ 2 mm width and ≤ 8 mm length\n• Adult: ≤ 4 mm width and ≤ 15 mm length\n• Texture fully softened\n• Any milk/fluid must not separate away from cereal. Drain excess fluid before serving'),
+        buildStyledTextContainer('BREAD', '• No regular, dry bread, sandwiches or toast of any kind\n• Use IDDSI Level 5 Minced & Moist sandwich recipe video\nhttps://www.youtube.com/watch?v=W7bOufqmz18\n\n• Pre-gelled “soaked” breads that are very moist and gelled through the entire thickness'),
+        buildStyledTextContainer('RICE, COUSCOUS, QUINOA (and similar food textures)', '• Not sticky or glutinous\n• Should not be particulate or separate into individual grains when cooked and served\n• Serve with smooth mildly, moderately or extremely thick sauce AND sauce must not separate away from rice, couscous, quinoa (and similar food textures). Drain excess fluid before serving'),
+      ];
+    } else if (levelType == 'Food' && levelNumber == 6) {
+      return [
+        buildStyledTextContainer('Level 6 – Soft & Bite-Sized', 'Food Specific or Other Examples'),
+        buildStyledTextContainer('MEAT', '• Cooked, tender meat no bigger than: Paediatric 8 mm pieces; Adults 15 mm (1.5 x 1.5 cm) pieces\n• If texture cannot be served soft and tender at 1.5 cm x 1.5 cm (as confirmed with fork/spoon pressure test), serve minced and moist'),
+        buildStyledTextContainer('FISH', '• Soft enough cooked fish to break into small pieces with fork, spoon or chopsticks\n• Paediatric: 8 mm pieces\n• Adults: 15 mm (1.5 cm) pieces\n• No bones or tough skins'),
+        buildStyledTextContainer('CASSEROLE / STEW / CURRY', '• Liquid portion (e.g. sauce) must be thick (as per clinician recommendations)\n• Can contain meat, fish or vegetables if final cooked pieces are soft and tender and no larger than: Paediatric 8 mm; Adults 15 mm (1.5 cm)\n• No hard lumps'),
+        buildStyledTextContainer('FRUIT', '• Serve minced or mashed if cannot be cut to soft & bite-sized pieces\n• Paediatric: 8 mm pieces\n• Adults: 15 mm (1.5 cm) pieces\n• Fibrous parts of fruit are not suitable\n• Drain excess juice\n• Assess individual ability to manage fruit with high water content (e.g. watermelon) where juice separates from solid in the mouth during chewing'),
+        buildStyledTextContainer('VEGETABLES', '• Steamed or boiled vegetables with final cooked size of: Paediatric 8 mm; Adults 15 mm (1.5 cm)\n• Stir fried vegetables may be too firm and are not soft or tender. Check softness with fork/spoon pressure test'),
+        buildStyledTextContainer('CEREAL', '• Smooth with soft tender lumps no bigger than: Paediatric 8 mm; Adults 15 mm (1.5 cm)\n• Texture fully softened\n• Any excess milk or liquid must be drained and/or thickened to thickness level recommended by clinician'),
+        buildStyledTextContainer('BREAD', '• No regular dry bread, sandwiches or toast of any kind\n• Use IDDSI Level 5 Minced & Moist sandwich recipe video to prepare bread and add to filling that meets Level 6 Soft & Bite-Sized requirements\nhttps://www.youtube.com/watch?v=W7bOufqmz18\n\n• Pre-gelled “soaked” breads that are very moist and gelled through the entire thickness'),
+        buildStyledTextContainer('RICE, COUSCOUS, QUINOA (and similar food textures)', '• Not particulate/grainy, sticky or glutinous'),
+      ];
+    } else if (levelType == 'Food' && levelNumber == 7) {
+      return [
+        buildStyledTextContainer('Level 7 – Easy to Chew', 'Food Specific or Other Examples'),
+        buildStyledTextContainer('MEAT', '• Cooked until tender\n• If texture cannot be served soft and tender, serve minced and moist'),
+        buildStyledTextContainer('FISH', '• Soft enough cooked fish to break into small pieces with the side of a fork, spoon or chopsticks'),
+        buildStyledTextContainer('CASSEROLE / STEW / CURRY', '• Can contain meat, fish, vegetables, or combinations of these if final cooked pieces are soft and tender\n• Serve in mildly, moderately or extremely thick sauce AND drain excess liquid\n• No hard lumps'),
+        buildStyledTextContainer('FRUIT', '• Soft enough to be cut or broken apart into smaller pieces with the side of a fork or spoon\n• Do not use the fibrous parts of fruit (e.g. the white part of an orange)'),
+        buildStyledTextContainer('VEGETABLES', '• Steam or boil vegetables until tender\n• Stir fried vegetables may be too firm for this level. Check softness with fork/spoon pressure test'),
+        buildStyledTextContainer('CEREAL', '• Served with texture softened\n• Drain excess milk or liquid and/or thicken to thickness level recommended by clinician'),
+        buildStyledTextContainer('BREAD', '• Bread, sandwiches and toast that can be cut or broken apart into smaller pieces with the side of a fork or spoon can be provided at clinician discretion'),
+        buildStyledTextContainer('RICE, COUSCOUS, QUINOA (and similar food textures)', '• No special instructions'),
+      ];
+    }
+
+    return [Text('Food Specific content for Level $levelNumber ($levelType) is not available.')];
   }
    // Helper function to get level color (from original TestingPage2)
    Color _getLevelColor(int levelNumber, String levelType) {
