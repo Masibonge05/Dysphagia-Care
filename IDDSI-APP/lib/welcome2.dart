@@ -14,7 +14,18 @@ class Welcome2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Added to capture all gestures
         onTap: onNext,
+        // Added swipe navigation
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity != null) {
+            if (details.primaryVelocity! > 0) {
+              onPrevious(); // Swipe right to go to previous page (Welcome1)
+            } else if (details.primaryVelocity! < 0) {
+              onNext(); // Swipe left to go to next page (Welcome3)
+            }
+          }
+        },
         child: Stack(
           children: [
             // Background Image
