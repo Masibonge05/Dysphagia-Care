@@ -107,10 +107,8 @@ Future<void> main() async {
   if (!kIsWeb) {
     try {
       token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        debugPrint('📲 FCM Token: $token');
-      }
-    } catch (e) {
+      debugPrint('📲 FCM Token: $token');
+        } catch (e) {
       debugPrint('❌ Error getting FCM token: $e');
     }
   } else {
