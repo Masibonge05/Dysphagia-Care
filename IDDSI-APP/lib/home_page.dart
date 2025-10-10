@@ -29,9 +29,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int selectedMoodIndex = -1;
   late List<AnimationController> _animationControllers;
-  //late List<Animation<double>> _bounceAnimations;
-  //late List<Animation<double>> _rotateAnimations;
-  //late List<Animation<double>> _shakeAnimations;
   int currentFoodIndex = 0;
   final PageController _foodPageController = PageController();
 
@@ -39,15 +36,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _userName = 'User';
   String? _currentUserId;
   int _unreadNotificationCount = 0;
-
-  // Define emoji states with their animations and expressions
-  /*final List<Map<String, dynamic>> _moodStates = [
-    {'initial': '😠', 'animated': '😡', 'animation': 'shake'},
-    {'initial': '😞', 'animated': '😢', 'animation': 'bounce'},
-    {'initial': '😐', 'animated': '😑', 'animation': 'blink'},
-    {'initial': '🙂', 'animated': '😊', 'animation': 'bounce'},
-    {'initial': '😄', 'animated': '😆', 'animation': 'rotate'},
-  ];*/
 
   final List<Map<String, dynamic>> foodItems = [
     {
@@ -83,34 +71,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         vsync: this,
       ),
     );
-    /*
-    _bounceAnimations = _animationControllers.map((controller) {
-      return Tween<double>(begin: 1.0, end: 1.3).animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: Curves.elasticOut,
-          reverseCurve: Curves.easeIn,
-        ),
-      );
-    }).toList();
-
-    _rotateAnimations = _animationControllers.map((controller) {
-      return Tween<double>(begin: 0, end: 0.2).animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: Curves.elasticInOut,
-        ),
-      );
-    }).toList();
-
-    _shakeAnimations = _animationControllers.map((controller) {
-      return Tween<double>(begin: 0, end: 15).animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: Curves.elasticIn,
-        ),
-      );
-    }).toList();*/
+   
   }
 
   Future<void> _getCurrentUser() async {
@@ -932,97 +893,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
-  /*
-  Widget _buildMoodIcon(int index) {
-    bool isSelected = selectedMoodIndex == index;
-    const defaultColor = Color(0xFF00529A); // Updated emoji color
-    const selectedColor = Color(0xFFFFD700);
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (selectedMoodIndex != -1) {
-            if (selectedMoodIndex != index) {
-              _animationControllers[selectedMoodIndex].reverse();
-            }
-          }
-          selectedMoodIndex = selectedMoodIndex == index ? -1 : index;
-          if (selectedMoodIndex == index) {
-            _animationControllers[index].forward();
-          } else {
-            _animationControllers[index].reverse();
-          }
-        });
-      },
-      child: AnimatedBuilder(
-        animation: _animationControllers[index],
-        builder: (context, child) {
-          double scale = 1.0;
-          double rotate = 0.0;
-          double translateX = 0.0;
-
-          switch (_moodStates[index]['animation']) {
-            case 'bounce':
-              scale = _bounceAnimations[index].value;
-              break;
-            case 'rotate':
-              rotate = _rotateAnimations[index].value;
-              scale = _bounceAnimations[index].value;
-              break;
-            case 'shake':
-              translateX = sin(_shakeAnimations[index].value) * 5;
-              break;
-            case 'blink':
-              scale = _bounceAnimations[index].value;
-              break;
-          }
-
-          return Transform.translate(
-            offset: Offset(translateX, 0),
-            child: Transform.rotate(
-              angle: rotate,
-              child: Transform.scale(
-                scale: scale,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 55,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: isSelected ? selectedColor : defaultColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isSelected ? selectedColor : defaultColor)
-                            .withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      _animationControllers[index].status ==
-                                  AnimationStatus.forward ||
-                              _animationControllers[index].status ==
-                                  AnimationStatus.completed
-                          ? _moodStates[index]['animated']
-                          : _moodStates[index]['initial'],
-                      style: const TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }*/
-
   Widget _buildLearnButton(String text, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
