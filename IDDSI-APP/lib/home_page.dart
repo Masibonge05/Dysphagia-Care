@@ -7,10 +7,6 @@ import 'level_data.dart'; // Import the new level data file
 
 // Imported Pages
 import 'mood_emoji.dart';
-import 'package:iddsi_app/what_is_iddsi_page.dart';
-import 'package:iddsi_app/what_is_dysphagia_page.dart';
-import 'package:iddsi_app/disclaimer_page.dart';
-import 'package:iddsi_app/signs_symptoms_page.dart';
 import 'package:iddsi_app/dysphagia_info_page.dart'; // NEW
 import 'package:iddsi_app/tips_adults_page.dart'; // NEW
 import 'package:iddsi_app/user_profile_page.dart'; // NEW

@@ -216,10 +216,10 @@ class TermsConditionsPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Questions or Concerns?',
                     style: TextStyle(
                       fontSize: 18,
@@ -227,16 +227,16 @@ class TermsConditionsPage extends StatelessWidget {
                       color: Color(0xFF44157F),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10),
+                  Text(
                     'If you have questions about these terms or the app, please contact:',
                     style: TextStyle(
                       fontSize: 14,
                       color: Color(0xFF333333),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10),
+                  Text(
                     'Speech Therapy Department\nChris Hani Baragwanath Academic Hospital',
                     style: TextStyle(
                       fontSize: 14,

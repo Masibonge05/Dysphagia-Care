@@ -361,11 +361,11 @@ class _FAQPageState extends State<FAQPage> with SingleTickerProviderStateMixin {
               ),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Column(
+            child: const Column(
               children: [
-                const Icon(Icons.question_answer, color: Colors.white, size: 50),
-                const SizedBox(height: 15),
-                const Text(
+                Icon(Icons.question_answer, color: Colors.white, size: 50),
+                SizedBox(height: 15),
+                Text(
                   'Ask the Speech Therapists',
                   style: TextStyle(
                     fontSize: 22,
@@ -373,10 +373,10 @@ class _FAQPageState extends State<FAQPage> with SingleTickerProviderStateMixin {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Text(
                   'Can\'t find your answer? Ask our team of speech therapists at Chris Hani Baragwanath Hospital.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     color: Colors.white,
                   ),

@@ -39,14 +39,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
   DateTime? _createdAt;
   
   final List<Map<String, dynamic>> _iddsiLevels = [
-    {'value': '0', 'name': 'Level 0 - Thin', 'color': Color(0xFF0066CC)},
-    {'value': '1', 'name': 'Level 1 - Slightly Thick', 'color': Color(0xFF00AACC)},
-    {'value': '2', 'name': 'Level 2 - Mildly Thick', 'color': Color(0xFF44CCAA)},
-    {'value': '3', 'name': 'Level 3 - Liquidised/Moderately Thick', 'color': Color(0xFFFFCC44)},
-    {'value': '4', 'name': 'Level 4 - Pureed/Extremely Thick', 'color': Color(0xFFFF8844)},
-    {'value': '5', 'name': 'Level 5 - Minced & Moist', 'color': Color(0xFFFF4444)},
-    {'value': '6', 'name': 'Level 6 - Soft & Bite-Sized', 'color': Color(0xFFAA4488)},
-    {'value': '7', 'name': 'Level 7 - Regular', 'color': Color(0xFF6644AA)},
+    {'value': '0', 'name': 'Level 0 - Thin', 'color': const Color(0xFF0066CC)},
+    {'value': '1', 'name': 'Level 1 - Slightly Thick', 'color': const Color(0xFF00AACC)},
+    {'value': '2', 'name': 'Level 2 - Mildly Thick', 'color': const Color(0xFF44CCAA)},
+    {'value': '3', 'name': 'Level 3 - Liquidised/Moderately Thick', 'color': const Color(0xFFFFCC44)},
+    {'value': '4', 'name': 'Level 4 - Pureed/Extremely Thick', 'color': const Color(0xFFFF8844)},
+    {'value': '5', 'name': 'Level 5 - Minced & Moist', 'color': const Color(0xFFFF4444)},
+    {'value': '6', 'name': 'Level 6 - Soft & Bite-Sized', 'color': const Color(0xFFAA4488)},
+    {'value': '7', 'name': 'Level 7 - Regular', 'color': const Color(0xFF6644AA)},
   ];
 
   final List<Map<String, String>> _languages = [

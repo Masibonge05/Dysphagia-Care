@@ -196,7 +196,7 @@ class AboutAppPage extends StatelessWidget {
                         _buildTeamMemberItem('Michelle Majebe'),
                         _buildTeamMemberItem('Njabulo Sibambo'),
                         _buildTeamMemberItem('Nzumbululo Nemakundani'),
-                        _buildTeamMemberItem('Kgotso Shabalala'),
+                        _buildTeamMemberItem('Kgotso Tshabalala'),
                         _buildTeamMemberItem('Mfanelo Myambo'),
                         _buildTeamMemberItem('Liyema Ndaliso'),
                         _buildTeamMemberItem('Tanaka Chichichi'),

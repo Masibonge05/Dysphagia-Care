@@ -195,16 +195,16 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.blue.withOpacity(0.3)),
                     ),
-                    child: Row(
+                    child: const Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outline, color: Colors.blue, size: 28),
-                        const SizedBox(width: 15),
+                        Icon(Icons.info_outline, color: Colors.blue, size: 28),
+                        SizedBox(width: 15),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'We\'re here to help!',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -212,8 +212,8 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                                   color: Colors.blue,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              const Text(
+                              SizedBox(height: 8),
+                              Text(
                                 'Your feedback helps us improve the app. Please describe any issues you\'ve encountered, and our team will review them on the therapist dashboard.',
                                 style: TextStyle(fontSize: 14, height: 1.5),
                               ),
