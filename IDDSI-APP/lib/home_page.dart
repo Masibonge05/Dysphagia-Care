@@ -11,6 +11,10 @@ import 'package:iddsi_app/what_is_iddsi_page.dart';
 import 'package:iddsi_app/what_is_dysphagia_page.dart';
 import 'package:iddsi_app/disclaimer_page.dart';
 import 'package:iddsi_app/signs_symptoms_page.dart';
+import 'package:iddsi_app/dysphagia_info_page.dart'; // NEW
+import 'package:iddsi_app/tips_adults_page.dart'; // NEW
+import 'package:iddsi_app/user_profile_page.dart'; // NEW
+import 'package:iddsi_app/app_drawer.dart'; // NEW - Separate drawer component
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -31,10 +35,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late List<AnimationController> _animationControllers;
   int currentFoodIndex = 0;
   final PageController _foodPageController = PageController();
+  final GlobalKey<ScaffoldState> _scaffoldKey =
+      GlobalKey<ScaffoldState>(); // NEW - For drawer
 
   // Firebase user data
   String _userName = 'User';
   String? _currentUserId;
+  String? _userProfileImage; // NEW - for profile picture
   int _unreadNotificationCount = 0;
   String? _selectedLevel; // Store the selected level value
   LevelData? _currentLevelData; // Store the level data
@@ -76,7 +83,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() {
           _userName = userData['name'] ?? widget.userName;
           _selectedLevel = userData['selectedLevel'];
-          
+          _userProfileImage =
+              userData['profileImage']; // NEW - Load profile image
+
           // Load level data
           if (_selectedLevel != null) {
             _currentLevelData = LevelDataProvider.getLevelData(_selectedLevel!);
@@ -145,8 +154,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     Navigator.pushNamed(context, '/chatbot');
   }
 
-  void _navigateToProfile() {
-    Navigator.pushNamed(context, '/profile');
+  void _navigateToProfile() async {
+    // NEW - Navigate to profile page with refresh
+    if (_currentUserId != null) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserProfilePage(
+            userId: _currentUserId!,
+            userName: _userName,
+            userProfileImage: _userProfileImage,
+          ),
+        ),
+      );
+      if (result == true) {
+        await _fetchUserData(_currentUserId!);
+      }
+    } else {
+      Navigator.pushNamed(context, '/profile');
+    }
   }
 
   void _navigateToSearch() {
@@ -156,75 +182,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFE8E8E8),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFF44157F),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Image.asset(
-                    'assets/iddsi-logo.png',
-                    height: 60,
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Image.asset('assets/icons/Vector (2).png',
-                  width: 24, height: 24),
-              title: const Text('What is the IDDSI?'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const WhatIsIddsiPage()));
-              },
-            ),
-            ListTile(
-              leading: Image.asset('assets/icons/Vector (3).png',
-                  width: 24, height: 24),
-              title: const Text('What is Dysphagia'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const WhatIsDysphagiaPage()));
-              },
-            ),
-            ListTile(
-              leading: Image.asset('assets/icons/Vector (4).png',
-                  width: 24, height: 24),
-              title: const Text('Disclaimer'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const DisclaimerPage()));
-              },
-            ),
-            ListTile(
-              leading: Image.asset('assets/icons/Vector.png',
-                  width: 24, height: 24),
-              title: const Text('Signs and Symptoms'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignsSymptomsPage()));
-              },
-            ),
-          ],
-        ),
+      drawer: AppDrawer(
+        userName: _userName,
+        userProfileImage: _userProfileImage,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -259,13 +221,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       // Header with profile and notifications
                       Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.white,
-                            child: Icon(
-                              Icons.person,
-                              color: Color(0xFF44157F),
-                              size: 30,
+                          GestureDetector(
+                            onTap: _navigateToProfile,
+                            child: CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Colors.white,
+                              backgroundImage: _userProfileImage != null
+                                  ? NetworkImage(_userProfileImage!)
+                                  : null,
+                              child: _userProfileImage == null
+                                  ? const Icon(
+                                      Icons.person,
+                                      color: Color(0xFF44157F),
+                                      size: 30,
+                                    )
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 15),
@@ -341,7 +311,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           const SizedBox(width: 10),
                           GestureDetector(
                             onTap: () {
-                              Scaffold.of(context).openDrawer();
+                              _scaffoldKey.currentState?.openDrawer();
                             },
                             child: Container(
                               width: 45,
@@ -443,14 +413,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   width: 35,
                                   height: 35,
                                   decoration: BoxDecoration(
-                                    color: _currentLevelData?.color ?? const Color(0xFFFFD700),
+                                    color: _currentLevelData?.color ??
+                                        const Color(0xFFFFD700),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
                                 const SizedBox(width: 18),
                                 Expanded(
                                   child: Text(
-                                    _currentLevelData?.label ?? 'No Level Selected',
+                                    _currentLevelData?.label ??
+                                        'No Level Selected',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -489,7 +461,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             children: [
                               Expanded(
                                 child: Text(
-                                  _currentLevelData?.label ?? 'No Level Selected',
+                                  _currentLevelData?.label ??
+                                      'No Level Selected',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -502,7 +475,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 width: 25,
                                 height: 25,
                                 decoration: BoxDecoration(
-                                  color: _currentLevelData?.color ?? const Color(0xFFFFD700),
+                                  color: _currentLevelData?.color ??
+                                      const Color(0xFFFFD700),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -519,20 +493,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           decoration: BoxDecoration(
                             color: const Color(0xFFB0E0E6),
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
                           ),
                           child: Column(
                             children: [
-                              Container(
-                                height: 200,
-                                padding: const EdgeInsets.symmetric(vertical: 20),
+                              SizedBox(
+                                height: 250,
                                 child: Stack(
                                   children: [
                                     PageView.builder(
@@ -542,14 +507,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           currentFoodIndex = index;
                                         });
                                       },
-                                      itemCount: _foodSuggestions.length > 1
-                                          ? (_foodSuggestions.length / 2).ceil()
-                                          : 1,
+                                      itemCount:
+                                          (_foodSuggestions.length / 2).ceil(),
                                       itemBuilder: (context, pageIndex) {
                                         return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20),
+                                          padding: const EdgeInsets.all(30),
                                           child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
                                             children: [
                                               // First food item
                                               Expanded(
@@ -561,15 +526,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                       decoration:
                                                           const BoxDecoration(
                                                         shape: BoxShape.circle,
-                                                        color: Colors.transparent,
+                                                        color:
+                                                            Colors.transparent,
                                                       ),
                                                       child: ClipOval(
                                                         child: Image.asset(
-                                                          _foodSuggestions[pageIndex * 2]
+                                                          _foodSuggestions[
+                                                                  pageIndex * 2]
                                                               .image,
                                                           fit: BoxFit.cover,
-                                                          errorBuilder: (context,
-                                                              error, stackTrace) {
+                                                          errorBuilder:
+                                                              (context, error,
+                                                                  stackTrace) {
                                                             return Container(
                                                               decoration:
                                                                   const BoxDecoration(
@@ -580,8 +548,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                               ),
                                                               child: const Icon(
                                                                 Icons.fastfood,
-                                                                color:
-                                                                    Colors.white,
+                                                                color: Colors
+                                                                    .white,
                                                                 size: 40,
                                                               ),
                                                             );
@@ -591,15 +559,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                     ),
                                                     const SizedBox(height: 12),
                                                     Text(
-                                                      _foodSuggestions[pageIndex * 2]
+                                                      _foodSuggestions[
+                                                              pageIndex * 2]
                                                           .name,
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        color: Color(0xFF333333),
+                                                        color:
+                                                            Color(0xFF333333),
                                                       ),
-                                                      textAlign: TextAlign.center,
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       maxLines: 2,
                                                       overflow:
                                                           TextOverflow.ellipsis,
@@ -619,13 +590,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                         height: 120,
                                                         decoration:
                                                             const BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          color:
-                                                              Colors.transparent,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color: Colors
+                                                              .transparent,
                                                         ),
                                                         child: ClipOval(
                                                           child: Image.asset(
-                                                            _foodSuggestions[pageIndex * 2 + 1]
+                                                            _foodSuggestions[
+                                                                    pageIndex *
+                                                                            2 +
+                                                                        1]
                                                                 .image,
                                                             fit: BoxFit.cover,
                                                             errorBuilder:
@@ -639,8 +614,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                                   shape: BoxShape
                                                                       .circle,
                                                                 ),
-                                                                child: const Icon(
-                                                                  Icons.fastfood,
+                                                                child:
+                                                                    const Icon(
+                                                                  Icons
+                                                                      .fastfood,
                                                                   color: Colors
                                                                       .white,
                                                                   size: 40,
@@ -650,9 +627,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(height: 12),
+                                                      const SizedBox(
+                                                          height: 12),
                                                       Text(
-                                                        _foodSuggestions[pageIndex * 2 + 1]
+                                                        _foodSuggestions[
+                                                                pageIndex * 2 +
+                                                                    1]
                                                             .name,
                                                         style: const TextStyle(
                                                           fontSize: 14,
@@ -664,8 +644,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                         textAlign:
                                                             TextAlign.center,
                                                         maxLines: 2,
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                     ],
                                                   ),
@@ -678,8 +658,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         );
                                       },
                                     ),
-                                    // Left tap area for going to previous page
-                                    if (currentFoodIndex > 0)
+
+                                    // Left arrow
+                                    if (_foodSuggestions.length > 2)
                                       Positioned(
                                         left: 0,
                                         top: 0,
@@ -707,11 +688,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           ),
                                         ),
                                       ),
-                                    // Right tap area for going to next page
-                                    if (currentFoodIndex <
-                                        (_foodSuggestions.length > 1
-                                            ? (_foodSuggestions.length / 2).ceil() - 1
-                                            : 0))
+
+                                    // Right arrow
+                                    if (_foodSuggestions.length > 2)
                                       Positioned(
                                         right: 0,
                                         top: 0,
@@ -721,7 +700,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           onTap: () {
                                             if (currentFoodIndex <
                                                 (_foodSuggestions.length > 1
-                                                    ? (_foodSuggestions.length / 2).ceil() - 1
+                                                    ? (_foodSuggestions.length /
+                                                                2)
+                                                            .ceil() -
+                                                        1
                                                     : 0)) {
                                               _foodPageController.nextPage(
                                                 duration: const Duration(
@@ -750,14 +732,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
-                                  _foodSuggestions.length > 1 
-                                      ? (_foodSuggestions.length / 2).ceil() 
+                                  _foodSuggestions.length > 1
+                                      ? (_foodSuggestions.length / 2).ceil()
                                       : 1,
                                   (index) => Container(
                                     width: 8,
                                     height: 8,
-                                    margin:
-                                        const EdgeInsets.symmetric(horizontal: 4),
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 4),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: currentFoodIndex == index
@@ -812,12 +794,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         crossAxisSpacing: 15,
                         childAspectRatio: 1.5,
                         children: [
-                          _buildLearnButton('What is\nDysphagia?', () {}),
+                          _buildLearnButton('What is\nDysphagia?', () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const DysphagiaInfoPage()));
+                          }),
                           _buildLearnButton(
                               'What are\nIDDSI Levels?', _navigateToFramework),
                           _buildLearnButton(
                               'How to\nTest Food', _navigateToFoodTesting),
-                          _buildLearnButton('Tips for\nOlder Adults', () {}),
+                          _buildLearnButton('Tips for\nOlder Adults', () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TipsAdultsPage()));
+                          }),
                         ],
                       ),
                       const SizedBox(height: 100),

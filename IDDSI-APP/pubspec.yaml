@@ -35,7 +35,9 @@ dependencies:
   email_validator: ^3.0.0
   lottie: ^2.7.0
   timeago: ^3.4.0
-  
+  record: ^5.0.4
+  audioplayers: ^5.2.1
+  path_provider: ^2.1.1
   
   # Updated Firebase dependencies to resolve version compatibility issues
   firebase_core: ^2.25.4
@@ -63,6 +65,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_tts: ^3.8.5
   speech_to_text: ^6.5.1
+  firebase_storage: ^11.7.7
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

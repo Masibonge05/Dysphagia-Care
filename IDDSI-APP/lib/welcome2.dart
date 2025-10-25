@@ -72,7 +72,7 @@ class Welcome2 extends StatelessWidget {
 
                     // Bottom logos row
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5f),
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

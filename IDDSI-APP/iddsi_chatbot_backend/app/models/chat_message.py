@@ -8,13 +8,15 @@ class ChatMessageRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
     language: str = Field(default="en", description="Language code (en, af, zu, etc.)")
     session_id: str = Field(..., description="Session ID for conversation tracking")
+    user_name: Optional[str] = Field(None, description="User's name for personalization")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "message": "What is IDDSI level 4?",
                 "language": "en",
-                "session_id": "1705320000000"
+                "session_id": "1705320000000",
+                "user_name": "Dan"
             }
         }
 

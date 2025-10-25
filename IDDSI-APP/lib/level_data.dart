@@ -16,6 +16,10 @@ class LevelData {
     required this.color,
     required this.foodSuggestions,
   });
+
+  get name => null;
+
+  get characteristics => null;
 }
 
 class FoodSuggestion {
@@ -26,6 +30,8 @@ class FoodSuggestion {
     required this.image,
     required this.name,
   });
+
+  get icon => null;
 }
 
 class LevelDataProvider {

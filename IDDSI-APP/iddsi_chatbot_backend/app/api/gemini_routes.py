@@ -31,13 +31,16 @@ async def chat(request: ChatMessageRequest):
     - **message**: User's message (required)
     - **language**: Language code (en, af, zu, xh, st, nso, tn, ss, ve, ts, nr)
     - **session_id**: Session ID for conversation context (required)
+    - **user_name**: User's name for personalization (optional)
     
     Returns bot response in the specified language, restricted to IDDSI/dysphagia topics.
+    The response will be personalized with the user's name when provided.
     """
     try:
         logger.info(
             f"Chat request - Session: {request.session_id}, "
             f"Language: {request.language}, "
+            f"User: {request.user_name or 'anonymous'}, "
             f"Message: {request.message[:50]}..."
         )
         
@@ -49,11 +52,12 @@ async def chat(request: ChatMessageRequest):
                 detail=f"Invalid language code. Must be one of: {', '.join(valid_languages)}"
             )
         
-        # Generate response
+        # Generate response with user name for personalization
         response_text = await gemini_service.generate_response(
             message=request.message,
             language_code=request.language,
-            session_id=request.session_id
+            session_id=request.session_id,
+            user_name=request.user_name  # Pass user name to service
         )
         
         return ChatMessageResponse(
@@ -106,6 +110,8 @@ async def clear_session(session_id: str):
     Clear session history
     
     - **session_id**: Session ID to clear
+    
+    This will clear both conversation history and stored user name for the session.
     """
     try:
         gemini_service.clear_session(session_id)

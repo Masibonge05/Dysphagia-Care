@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
 
 class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
@@ -22,15 +26,21 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speech = stt.SpeechToText();
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isTyping = false;
   bool _isLoading = true;
   bool _isListening = false;
   String _selectedLanguage = '';
   String _selectedLanguageCode = '';
+  String _currentSessionLanguageCode = ''; // For temporary language changes
   bool _voiceEnabled = false;
   int _dailyMessageCount = 0;
   String _sessionId = '';
+  String _userName = ''; // Store user's name
+  String? _currentRecordingPath;
+  String _recognizedText = ''; // Store real-time recognized text
 
   // API Configuration
   static const String apiBaseUrl = 'http://127.0.0.1:8000';
@@ -40,19 +50,34 @@ class _ChatbotPageState extends State<ChatbotPage> {
   static const Color secondaryPurple = Color(0xFF4157FF);
   static const Color chatBubbleColor = Color(0xFFF5F5F5);
 
-  // Greeting messages in different languages
+  // South African official languages
+  final Map<String, String> _saLanguages = {
+    'en': 'English',
+    'af': 'Afrikaans',
+    'zu': 'isiZulu',
+    'xh': 'isiXhosa',
+    'st': 'Sesotho',
+    'nso': 'Sepedi',
+    'tn': 'Setswana',
+    'ss': 'siSwati',
+    've': 'Tshivenda',
+    'ts': 'Xitsonga',
+    'nr': 'isiNdebele',
+  };
+
+  // Greeting messages in different languages with {name} placeholder
   final Map<String, String> _greetings = {
-    'en': 'Hello! How can I help you today?',
-    'af': 'Hallo! Hoe kan ek jou vandag help?',
-    'zu': 'Sawubona! Ngingakusiza kanjani namuhla?',
-    'xh': 'Molo! Ndingakunceda njani namhlanje?',
-    'st': 'Dumela! Nka u thusa jwang kajeno?',
-    'nso': 'Thobela! Nka go thuša bjang lehono?',
-    'tn': 'Dumela! Nka go thusa jang gompieno?',
-    'ss': 'Sawubona! Ngingakusita njani namuhla?',
-    've': 'Ndaa! Ndi nga ni thusa hani namusi?',
-    'ts': 'Xewani! Ndzi nga ni pfuna njhani namuntlha?',
-    'nr': 'Lotjhani! Ngingalikusiza njani lamuhla?',
+    'en': 'Hi {name}! How can I help you today?',
+    'af': 'Hallo {name}! Hoe kan ek jou vandag help?',
+    'zu': 'Sawubona {name}! Ngingakusiza kanjani namuhla?',
+    'xh': 'Molo {name}! Ndingakunceda njani namhlanje?',
+    'st': 'Dumela {name}! Nka u thusa jwang kajeno?',
+    'nso': 'Thobela {name}! Nka go thuša bjang lehono?',
+    'tn': 'Dumela {name}! Nka go thusa jang gompieno?',
+    'ss': 'Sawubona {name}! Ngingakusita njani namuhla?',
+    've': 'Ndaa {name}! Ndi nga ni thusa hani namusi?',
+    'ts': 'Xewani {name}! Ndzi nga ni pfuna njhani namuntlha?',
+    'nr': 'Lotjhani {name}! Ngingalikusiza njani lamuhla?',
   };
 
   // Limit messages
@@ -77,6 +102,16 @@ class _ChatbotPageState extends State<ChatbotPage> {
     _initializeTTS();
     _initializeSpeech();
     _loadUserPreferences();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    _flutterTts.stop();
+    _audioRecorder.dispose();
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeTTS() async {
@@ -144,13 +179,15 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
       setState(() {
         _selectedLanguageCode = data['languageCode'] ?? 'en';
+        _currentSessionLanguageCode = _selectedLanguageCode; // Initialize session language
         _selectedLanguage = data['languageName'] ?? 'English';
         _voiceEnabled = data['voiceEnabled'] ?? false;
+        _userName = data['name'] ?? 'Friend'; // Get user's name
         _isLoading = false;
       });
 
       // Set TTS language
-      await _flutterTts.setLanguage(_selectedLanguageCode);
+      await _flutterTts.setLanguage(_currentSessionLanguageCode);
 
       // Add greeting message
       _addGreetingMessage();
@@ -166,7 +203,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   void _addGreetingMessage() {
     Future.delayed(const Duration(milliseconds: 500), () {
-      final greeting = _greetings[_selectedLanguageCode] ?? _greetings['en']!;
+      final greetingTemplate = _greetings[_currentSessionLanguageCode] ?? _greetings['en']!;
+      final greeting = greetingTemplate.replaceAll('{name}', _userName);
 
       setState(() {
         _messages.add({
@@ -180,7 +218,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
     });
   }
 
-  Future<void> _sendMessage({String? voiceText}) async {
+  Future<void> _sendMessage({String? voiceText, String? audioPath}) async {
     final text = voiceText ?? _controller.text.trim();
     if (text.isEmpty) return;
 
@@ -196,6 +234,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
       'message': text,
       'isUser': true,
       'timestamp': DateTime.now(),
+      'audioPath': audioPath, // Store audio path if available
     };
 
     setState(() {
@@ -218,14 +257,15 @@ class _ChatbotPageState extends State<ChatbotPage> {
         _dailyMessageCount++;
       });
 
-      // Send message to Gemini backend
+      // Send message to Gemini backend using current session language
       final response = await http.post(
         Uri.parse('$apiBaseUrl/api/gemini/chat'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'message': text,
-          'language': _selectedLanguageCode,
+          'language': _currentSessionLanguageCode,
           'session_id': _sessionId,
+          'user_name': _userName,  // Send user's name for personalized responses
         }),
       ).timeout(const Duration(seconds: 30));
 
@@ -245,55 +285,201 @@ class _ChatbotPageState extends State<ChatbotPage> {
           _messages.add(botMessage);
         });
 
-        // Speak response if voice enabled
+        _scrollToBottom();
+
+        // Speak the response if voice is enabled
         if (_voiceEnabled) {
           await _flutterTts.speak(botResponse);
         }
-
-        // Save to chat history
-        await _saveChatMessage(user.uid, userMessage);
-        await _saveChatMessage(user.uid, botMessage);
       } else {
-        throw Exception('Server error: ${response.statusCode}');
+        throw Exception('Failed to get response from chatbot');
       }
     } catch (e) {
       setState(() {
         _isTyping = false;
-        _messages.add({
-          'message': 'Sorry, I could not connect to the server. Please check your connection.',
-          'isUser': false,
-          'timestamp': DateTime.now(),
-        });
       });
+      _showError('Error: ${e.toString()}');
     }
-
-    _scrollToBottom();
   }
 
-  Future<void> _saveChatMessage(String userId, Map<String, dynamic> message) async {
-    try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('chatHistory')
-          .add({
-        'message': message['message'],
-        'isUser': message['isUser'],
-        'timestamp': message['timestamp'].toIso8601String(),
+  Future<void> _toggleListening() async {
+    if (_isListening) {
+      // Stop listening and recording
+      await _speech.stop();
+      if (_currentRecordingPath != null) {
+        await _audioRecorder.stop();
+        // Send the message with both text and audio
+        await _sendMessage(voiceText: _recognizedText, audioPath: _currentRecordingPath);
+        _currentRecordingPath = null;
+        _recognizedText = '';
+      }
+      setState(() {
+        _isListening = false;
       });
-    } catch (e) {
-      print('Error saving chat message: $e');
+    } else {
+      // Start listening and recording
+      final hasPermission = await _audioRecorder.hasPermission();
+      if (!hasPermission) {
+        _showError('Microphone permission denied');
+        return;
+      }
+
+      bool available = await _speech.initialize();
+      if (!available) {
+        _showError('Speech recognition not available');
+        return;
+      }
+
+      // Create audio file path
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      _currentRecordingPath = '${directory.path}/$fileName';
+
+      // Start recording
+      await _audioRecorder.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: _currentRecordingPath!,
+      );
+
+      setState(() {
+        _isListening = true;
+        _recognizedText = '';
+      });
+
+      // Start speech recognition with real-time updates
+      await _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _recognizedText = result.recognizedWords;
+            _controller.text = _recognizedText; // Show in text field
+          });
+        },
+        localeId: _currentSessionLanguageCode,
+        listenMode: stt.ListenMode.confirmation,
+      );
     }
+  }
+
+  Future<void> _playAudio(String audioPath) async {
+    try {
+      await _audioPlayer.play(DeviceFileSource(audioPath));
+    } catch (e) {
+      _showError('Error playing audio: ${e.toString()}');
+    }
+  }
+
+  Future<void> _stopAudio() async {
+    await _audioPlayer.stop();
+  }
+
+  Future<void> _toggleVoice() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      final newVoiceState = !_voiceEnabled;
+
+      await _firestore.collection('users').doc(user.uid).update({
+        'voiceEnabled': newVoiceState,
+      });
+
+      setState(() {
+        _voiceEnabled = newVoiceState;
+      });
+
+      if (!newVoiceState) {
+        await _flutterTts.stop();
+      }
+    } catch (e) {
+      _showError('Error toggling voice: ${e.toString()}');
+    }
+  }
+
+  Future<void> _stopSpeaking() async {
+    await _flutterTts.stop();
+  }
+
+  void _showLanguagePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 4,
+              width: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Change Language (This Session Only)',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: primaryPurple,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'This will not save to your profile',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _saLanguages.length,
+                itemBuilder: (context, index) {
+                  final languageCode = _saLanguages.keys.elementAt(index);
+                  final languageName = _saLanguages[languageCode]!;
+                  final isSelected = languageCode == _currentSessionLanguageCode;
+
+                  return ListTile(
+                    leading: Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                      color: isSelected ? primaryPurple : Colors.grey,
+                    ),
+                    title: Text(
+                      languageName,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? primaryPurple : Colors.black87,
+                      ),
+                    ),
+                    onTap: () async {
+                      setState(() {
+                        _currentSessionLanguageCode = languageCode;
+                      });
+                      await _flutterTts.setLanguage(languageCode);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showLimitDialog() {
-    final limitMsg = _limitMessages[_selectedLanguageCode] ?? _limitMessages['en']!;
+    final message = _limitMessages[_currentSessionLanguageCode] ?? _limitMessages['en']!;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Daily Limit Reached'),
-        content: Text(limitMsg),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -304,74 +490,14 @@ class _ChatbotPageState extends State<ChatbotPage> {
     );
   }
 
-  Future<void> _toggleVoice() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
-    final newValue = !_voiceEnabled;
-
-    await _firestore.collection('users').doc(user.uid).update({
-      'voiceEnabled': newValue,
-    });
-
-    setState(() {
-      _voiceEnabled = newValue;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(newValue ? 'Voice enabled' : 'Voice disabled'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  Future<void> _toggleListening() async {
-    if (!_voiceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enable voice first'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    if (_isListening) {
-      await _speech.stop();
-      setState(() {
-        _isListening = false;
-      });
-    } else {
-      setState(() {
-        _isListening = true;
-      });
-
-      await _speech.listen(
-        onResult: (result) {
-          if (result.finalResult) {
-            _sendMessage(voiceText: result.recognizedWords);
-            setState(() {
-              _isListening = false;
-            });
-          }
-        },
-        localeId: _selectedLanguageCode,
-        cancelOnError: true,
-        listenMode: stt.ListenMode.confirmation,
-      );
-    }
-  }
-
-  Future<void> _stopSpeaking() async {
-    await _flutterTts.stop();
-  }
-
   void _showError(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -389,85 +515,30 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    _scrollController.dispose();
-    _flutterTts.stop();
-    _speech.stop();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(
-            color: Color(0xFF7A60D6),
+            valueColor: AlwaysStoppedAnimation<Color>(primaryPurple),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: _buildChatScreen(),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 1,
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-            size: 20,
-          ),
+      appBar: AppBar(
+        title: const Text(
+          'Dysphagia Care Assistant',
+          style: TextStyle(color: Colors.white),
         ),
-        onPressed: () => Navigator.of(context).pop(),
+        backgroundColor: primaryPurple,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      title: const Text(
-        'IDDSI Chat Bot',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      centerTitle: true,
-      backgroundColor: primaryPurple,
-      elevation: 0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChatScreen() {
-    return Container(
-      color: Colors.white,
-      child: Column(
+      body: Column(
         children: [
-          _buildChatHeader(),
+          _buildHeader(),
           Expanded(child: _buildMessageList()),
           _buildInputArea(),
         ],
@@ -475,11 +546,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
     );
   }
 
-  Widget _buildChatHeader() {
+  Widget _buildHeader() {
     final remaining = 5 - _dailyMessageCount;
+    final currentLanguageName = _saLanguages[_currentSessionLanguageCode] ?? 'English';
+    final isLanguageChanged = _currentSessionLanguageCode != _selectedLanguageCode;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -490,39 +563,86 @@ class _ChatbotPageState extends State<ChatbotPage> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Chat in $_selectedLanguage',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: primaryPurple,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Chat in $currentLanguageName',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: primaryPurple,
+                          ),
+                        ),
+                        if (isLanguageChanged) ...[
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.edit,
+                            size: 14,
+                            color: secondaryPurple,
+                          ),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      '$remaining messages remaining today',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '$remaining messages remaining today',
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.language,
+                      color: primaryPurple,
+                    ),
+                    onPressed: _showLanguagePicker,
+                    tooltip: 'Change language',
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _voiceEnabled ? Icons.volume_up : Icons.volume_off,
+                      color: primaryPurple,
+                    ),
+                    onPressed: _toggleVoice,
+                    tooltip: 'Toggle voice',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (isLanguageChanged)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: secondaryPurple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Temporary language change - not saved',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                    fontSize: 11,
+                    color: Colors.grey[700],
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: Icon(
-              _voiceEnabled ? Icons.volume_up : Icons.volume_off,
-              color: primaryPurple,
-            ),
-            onPressed: _toggleVoice,
-            tooltip: 'Toggle voice',
-          ),
         ],
       ),
     );
@@ -594,6 +714,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   Widget _buildMessageBubble(Map<String, dynamic> message) {
     final isUser = message['isUser'] as bool;
+    final audioPath = message['audioPath'] as String?;
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -622,6 +743,32 @@ class _ChatbotPageState extends State<ChatbotPage> {
                 ),
               ),
             ),
+            // Audio playback for user messages with recordings
+            if (isUser && audioPath != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow, size: 20),
+                    color: primaryPurple,
+                    onPressed: () => _playAudio(audioPath),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Play your question',
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.stop, size: 20),
+                    color: primaryPurple,
+                    onPressed: _stopAudio,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Stop',
+                  ),
+                ],
+              ),
+            ],
             // Voice controls for bot messages
             if (!isUser && _voiceEnabled) ...[
               const SizedBox(height: 4),
@@ -672,14 +819,18 @@ class _ChatbotPageState extends State<ChatbotPage> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Type a Message...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintText: _isListening ? 'Listening...' : 'Type a Message...',
+                hintStyle: TextStyle(
+                  color: _isListening ? secondaryPurple : Colors.grey[400],
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: chatBubbleColor,
+                fillColor: _isListening 
+                    ? primaryPurple.withOpacity(0.05)
+                    : chatBubbleColor,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
@@ -692,11 +843,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
           // Voice input button
           Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  primaryPurple,
-                  secondaryPurple,
-                ],
+              gradient: LinearGradient(
+                colors: _isListening
+                    ? [Colors.red, Colors.redAccent]
+                    : [primaryPurple, secondaryPurple],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
