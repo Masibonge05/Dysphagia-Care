@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'app.dart'; // Import your app with routing and logic
 
 // Background message handler must be a top-level function
@@ -108,7 +110,7 @@ Future<void> main() async {
     try {
       token = await FirebaseMessaging.instance.getToken();
       debugPrint('📲 FCM Token: $token');
-        } catch (e) {
+    } catch (e) {
       debugPrint('❌ Error getting FCM token: $e');
     }
   } else {

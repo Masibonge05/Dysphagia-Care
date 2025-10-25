@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth.dart';
 
 class LoginPage extends StatefulWidget {
@@ -38,6 +39,31 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  /// Check if user has completed personal info registration
+  Future<bool> _hasCompletedPersonalInfo(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      
+      // Check if document exists and has personal info fields
+      if (doc.exists) {
+        final data = doc.data();
+        // You can customize these fields based on your personal info requirements
+        return data != null && 
+               data.containsKey('firstName') && 
+               data.containsKey('lastName') &&
+               data['firstName'] != null &&
+               data['lastName'] != null;
+      }
+      return false;
+    } catch (e) {
+      print('Error checking personal info: $e');
+      return false;
+    }
+  }
+
   Future<void> _signIn() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
@@ -52,8 +78,27 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordController.text;
 
     try {
+      // Sign in the user
       await AuthService().signIn(email: email, password: password);
-        Navigator.pushReplacementNamed(context, '/personalInfo'); 
+      
+      // Get current user
+      final user = FirebaseAuth.instance.currentUser;
+      
+      if (user != null) {
+        // Check if user has completed personal info
+        final hasPersonalInfo = await _hasCompletedPersonalInfo(user.uid);
+        
+        if (!mounted) return;
+        
+        // Navigate based on whether personal info is completed
+        if (hasPersonalInfo) {
+          // User has personal info - go to home page
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          // First-time user or incomplete personal info - go to personal info page
+          Navigator.pushReplacementNamed(context, '/personalInfo');
+        }
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');

@@ -353,7 +353,8 @@ class AppDrawer extends StatelessWidget {
       try {
         await FirebaseAuth.instance.signOut();
         if (context.mounted) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/login', (route) => false);
         }
       } catch (e) {
         if (context.mounted) {

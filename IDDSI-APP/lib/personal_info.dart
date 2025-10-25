@@ -15,22 +15,72 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
   final TextEditingController _ageController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   String? selectedLevel;
   bool isLoading = false;
 
   // All level options combined
   final List<Map<String, dynamic>> allLevels = [
-    {'value': 'fluid_0', 'label': 'Level 0: Thin', 'category': 'Fluids', 'level': '0'},
-    {'value': 'fluid_1', 'label': 'Level 1: Slightly Thick', 'category': 'Fluids', 'level': '1'},
-    {'value': 'fluid_2', 'label': 'Level 2: Mildly Thick', 'category': 'Fluids', 'level': '2'},
-    {'value': 'fluid_3', 'label': 'Level 3: Moderately Thick', 'category': 'Fluids', 'level': '3'},
-    {'value': 'fluid_4', 'label': 'Level 4: Extremely Thick', 'category': 'Fluids', 'level': '4'},
-    {'value': 'food_3', 'label': 'Level 3: Liquidised', 'category': 'Food', 'level': '3'},
-    {'value': 'food_4', 'label': 'Level 4: Puréed', 'category': 'Food', 'level': '4'},
-    {'value': 'food_5', 'label': 'Level 5: Minced and Moist', 'category': 'Food', 'level': '5'},
-    {'value': 'food_6', 'label': 'Level 6: Soft and Bite-Sized', 'category': 'Food', 'level': '6'},
-    {'value': 'food_7', 'label': 'Level 7: Regular', 'category': 'Food', 'level': '7'},
+    {
+      'value': 'fluid_0',
+      'label': 'Level 0: Thin',
+      'category': 'Fluids',
+      'level': '0'
+    },
+    {
+      'value': 'fluid_1',
+      'label': 'Level 1: Slightly Thick',
+      'category': 'Fluids',
+      'level': '1'
+    },
+    {
+      'value': 'fluid_2',
+      'label': 'Level 2: Mildly Thick',
+      'category': 'Fluids',
+      'level': '2'
+    },
+    {
+      'value': 'fluid_3',
+      'label': 'Level 3: Moderately Thick',
+      'category': 'Fluids',
+      'level': '3'
+    },
+    {
+      'value': 'fluid_4',
+      'label': 'Level 4: Extremely Thick',
+      'category': 'Fluids',
+      'level': '4'
+    },
+    {
+      'value': 'food_3',
+      'label': 'Level 3: Liquidised',
+      'category': 'Food',
+      'level': '3'
+    },
+    {
+      'value': 'food_4',
+      'label': 'Level 4: Puréed',
+      'category': 'Food',
+      'level': '4'
+    },
+    {
+      'value': 'food_5',
+      'label': 'Level 5: Minced and Moist',
+      'category': 'Food',
+      'level': '5'
+    },
+    {
+      'value': 'food_6',
+      'label': 'Level 6: Soft and Bite-Sized',
+      'category': 'Food',
+      'level': '6'
+    },
+    {
+      'value': 'food_7',
+      'label': 'Level 7: Regular',
+      'category': 'Food',
+      'level': '7'
+    },
   ];
 
   @override
@@ -61,12 +111,17 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
       final user = _auth.currentUser;
       if (user != null) {
         // Parse the selected level to determine category and level
-        final selectedLevelData = allLevels.firstWhere((level) => level['value'] == selectedLevel);
+        final selectedLevelData =
+            allLevels.firstWhere((level) => level['value'] == selectedLevel);
         final category = selectedLevelData['category'].toLowerCase();
         final levelValue = selectedLevelData['level'];
 
         Map<String, dynamic> userData = {
           'name': _nameController.text.trim(),
+          'firstName':
+              _nameController.text.trim(), // Added for authentication check
+          'lastName':
+              '', // Added for authentication check (can be empty but must exist)
           'age': int.tryParse(_ageController.text.trim()) ?? 0,
           'selectedLevel': selectedLevel,
           'selectedCategory': category,
@@ -85,7 +140,10 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
           userData['fluidLevel'] = null;
         }
 
-        await _firestore.collection('users').doc(user.uid).set(userData, SetOptions(merge: true));
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userData, SetOptions(merge: true));
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,13 +153,9 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
             ),
           );
 
-          // Navigate to language selection page
-          Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const LanguageSelectionPage())
-          );
+          // Navigate to home page after successful save
+          Navigator.pushReplacementNamed(context, '/home');
         }
-        
       } else {
         throw Exception('User not authenticated');
       }
@@ -137,37 +191,38 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
         ),
         const SizedBox(height: 12),
         ...options.map((option) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: option['value']!,
-                groupValue: selectedLevel,
-                onChanged: (value) {
-                  setState(() {
-                    selectedLevel = value;
-                  });
-                },
-                activeColor: const Color(0xFF01224F),
-                fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return const Color(0xFF01224F);
-                  }
-                  return Colors.white;
-                }),
-              ),
-              Expanded(
-                child: Text(
-                  option['label']!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF01224F),
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Radio<String>(
+                    value: option['value']!,
+                    groupValue: selectedLevel,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedLevel = value;
+                      });
+                    },
+                    activeColor: const Color(0xFF01224F),
+                    fillColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return const Color(0xFF01224F);
+                      }
+                      return Colors.white;
+                    }),
                   ),
-                ),
+                  Expanded(
+                    child: Text(
+                      option['label']!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF01224F),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }
@@ -175,8 +230,10 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
   @override
   Widget build(BuildContext context) {
     // Filter levels by category for display
-    final fluidLevels = allLevels.where((level) => level['category'] == 'Fluids').toList();
-    final foodLevels = allLevels.where((level) => level['category'] == 'Food').toList();
+    final fluidLevels =
+        allLevels.where((level) => level['category'] == 'Fluids').toList();
+    final foodLevels =
+        allLevels.where((level) => level['category'] == 'Food').toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -215,13 +272,14 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  
+
                   // Name Input Field
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF00529A), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFF00529A), width: 2),
                     ),
                     child: TextField(
                       controller: _nameController,
@@ -229,7 +287,8 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                         hintText: 'Insert Name',
                         hintStyle: TextStyle(color: Color(0xFF00529A)),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       style: const TextStyle(
                         fontSize: 16,
@@ -238,13 +297,14 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Age Input Field
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF00529A), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFF00529A), width: 2),
                     ),
                     child: TextField(
                       controller: _ageController,
@@ -253,7 +313,8 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                         hintText: 'Insert Age',
                         hintStyle: TextStyle(color: Color(0xFF00529A)),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       style: const TextStyle(
                         fontSize: 16,
@@ -262,7 +323,7 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   const Text(
                     'Please Select Your Level (Choose Only One)',
                     style: TextStyle(
@@ -272,15 +333,15 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Fluids Section
                   _buildRadioGroup('Fluids', fluidLevels),
                   const SizedBox(height: 24),
-                  
+
                   // Food Section
                   _buildRadioGroup('Food', foodLevels),
                   const SizedBox(height: 40),
-                  
+
                   // Continue Button
                   SizedBox(
                     width: double.infinity,

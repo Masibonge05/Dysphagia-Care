@@ -59,7 +59,7 @@ class Welcome2 extends StatelessWidget {
                         height: 300,
                       ),
                     ),
-                    
+
                     const Text(
                       'Powered By',
                       style: TextStyle(
@@ -77,14 +77,15 @@ class Welcome2 extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(width: 40),
-                          // Speech Logo
+                          // Speech Logo - Increased size from 70 to 120
                           Image.asset(
                             'assets/speech.logo.png',
-                            height: 70,
+                            height: 120,
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
