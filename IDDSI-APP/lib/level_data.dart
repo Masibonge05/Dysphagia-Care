@@ -32,6 +32,8 @@ class FoodSuggestion {
   });
 
   get icon => null;
+
+  String? get emoji => null;
 }
 
 class LevelDataProvider {

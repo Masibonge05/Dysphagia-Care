@@ -45,7 +45,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
 
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      
+
       if (user == null) {
         throw Exception('User not logged in');
       }
@@ -65,23 +65,27 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
         userEmail = userData['email'] ?? user.email ?? 'No email';
       }
 
-      // Submit to Firebase
-      await FirebaseFirestore.instance.collection('problem_reports').add({
+      // Submit to Firebase - FIXED: Using correct collection and fields
+      await FirebaseFirestore.instance.collection('reported_issues').add({
+        'title': _selectedCategory, // Use category as title
+        'description': _problemController.text.trim(),
+        'category': _selectedCategory,
+        'priority': 'medium', // Default priority
+        'status': 'new', // Changed from 'pending' to 'new'
         'userId': user.uid,
         'userName': userName,
         'userEmail': userEmail,
-        'category': _selectedCategory,
-        'description': _problemController.text.trim(),
-        'status': 'pending',
-        'timestamp': FieldValue.serverTimestamp(),
-        'resolved': false,
+        'reportedAt': FieldValue.serverTimestamp(),
+        'resolvedAt': null,
+        'resolution': null,
       });
 
       if (mounted) {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Problem reported successfully! Our team will review it.'),
+            content:
+                Text('Problem reported successfully! Our team will review it.'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -214,8 +218,11 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Your feedback helps us improve the app. Please describe any issues you\'ve encountered, and our team will review them on the therapist dashboard.',
-                                style: TextStyle(fontSize: 14, height: 1.5),
+                                'Report any issues you encounter, and our team will investigate and work on a fix.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.5,
+                                ),
                               ),
                             ],
                           ),
@@ -223,105 +230,100 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 25),
 
-                  // Report Form
-                  Form(
-                    key: _formKey,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                  // Form Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Category Selection
+                          // Category Dropdown
                           const Text(
-                            'Problem Category',
+                            'Problem Category *',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF44157F),
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF333333),
                             ),
                           ),
                           const SizedBox(height: 10),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 15),
                             decoration: BoxDecoration(
                               color: Colors.grey.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                              border: Border.all(
+                                  color: Colors.grey.withOpacity(0.3)),
                             ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedCategory,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF44157F)),
-                                items: _categories.map((String category) {
-                                  return DropdownMenuItem<String>(
-                                    value: category,
-                                    child: Text(
-                                      category,
-                                      style: const TextStyle(fontSize: 15),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedCategory = newValue!;
-                                  });
-                                },
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedCategory,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                prefixIcon: Icon(Icons.category,
+                                    color: Color(0xFF44157F)),
                               ),
+                              items: _categories.map((category) {
+                                return DropdownMenuItem(
+                                  value: category,
+                                  child: Text(category),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedCategory = value!;
+                                });
+                              },
                             ),
                           ),
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 20),
 
                           // Problem Description
                           const Text(
-                            'Describe the Problem',
+                            'Problem Description *',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF44157F),
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF333333),
                             ),
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
                             controller: _problemController,
                             maxLines: 8,
-                            maxLength: 1000,
                             decoration: InputDecoration(
-                              hintText: 'Please provide as much detail as possible...\n\n'
-                                  'For example:\n'
-                                  '• What were you trying to do?\n'
-                                  '• What happened?\n'
-                                  '• What did you expect to happen?',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[400],
-                              ),
+                              hintText:
+                                  'Please describe the problem in detail...\n\n• What happened?\n• What did you expect to happen?\n• What steps led to this issue?',
                               filled: true,
                               fillColor: Colors.grey.withOpacity(0.1),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                                borderSide: BorderSide(
+                                    color: Colors.grey.withOpacity(0.3)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                                borderSide: BorderSide(
+                                    color: Colors.grey.withOpacity(0.3)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(color: Color(0xFF44157F), width: 2),
+                                borderSide: const BorderSide(
+                                    color: Color(0xFF44157F), width: 2),
                               ),
                             ),
                             validator: (value) {
@@ -344,7 +346,8 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF44157F),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -356,11 +359,14 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(Icons.send, size: 20),
                                         SizedBox(width: 10),
@@ -401,7 +407,8 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.lightbulb, color: Colors.orange, size: 24),
+                            Icon(Icons.lightbulb,
+                                color: Colors.orange, size: 24),
                             SizedBox(width: 10),
                             Text(
                               'Tips for Reporting',
@@ -415,7 +422,8 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                         ),
                         const SizedBox(height: 15),
                         _buildTip('Be specific about what went wrong'),
-                        _buildTip('Include steps to reproduce the issue if possible'),
+                        _buildTip(
+                            'Include steps to reproduce the issue if possible'),
                         _buildTip('Mention which page or feature was affected'),
                         _buildTip('Note any error messages you saw'),
                         _buildTip('Include device information if relevant'),
@@ -451,10 +459,12 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                           ],
                         ),
                         const SizedBox(height: 15),
-                        _buildStep('1', 'Your report is sent to the speech therapist dashboard'),
+                        _buildStep('1',
+                            'Your report is sent to the speech therapist dashboard'),
                         _buildStep('2', 'Our team reviews the issue'),
                         _buildStep('3', 'We work on fixing the problem'),
-                        _buildStep('4', 'Updates are released in future app versions'),
+                        _buildStep(
+                            '4', 'Updates are released in future app versions'),
                       ],
                     ),
                   ),
