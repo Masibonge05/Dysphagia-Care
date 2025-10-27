@@ -7,81 +7,85 @@ from app.core.config import settings
 import logging
 import time
 
+# -----------------------------
 # Configure logging
+# -----------------------------
 logging.basicConfig(
-    level=getattr(logging, settings.LOG_LEVEL),
+    level=getattr(logging, settings.LOG_LEVEL, "INFO"),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-
 logger = logging.getLogger(__name__)
 
-
-# Lifespan context manager for startup and shutdown
+# -----------------------------
+# Lifespan context manager
+# -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Handle application startup and shutdown"""
-    # Startup
+    """Handle startup and shutdown tasks"""
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"Gemini Model: {settings.GEMINI_MODEL}")
     logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
     logger.info(f"Server running at http://localhost:8000")
     logger.info(f"API Documentation: http://localhost:8000/docs")
-    
+
+    # Startup tasks can go here
     yield
-    
-    # Shutdown
+    # Shutdown tasks can go here
     logger.info("Shutting down application")
 
-
-# Create FastAPI app with lifespan
+# -----------------------------
+# Initialize FastAPI app
+# -----------------------------
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="IDDSI Chatbot API with Gemini 2.5 Flash",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan  # Add the lifespan parameter here
+    lifespan=lifespan
 )
 
-# CORS Middleware
+# -----------------------------
+# CORS middleware
+# -----------------------------
+# In production, list only allowed origins
+allowed_origins = [
+    "https://dysphagia-care.onrender.com",  # Flutter Web or other clients
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],  # ensures OPTIONS allowed
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
+# -----------------------------
 # Request logging middleware
+# -----------------------------
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log all requests"""
     start_time = time.time()
-    
+
     # Skip logging for health check endpoints
     if request.url.path not in ["/", "/health"]:
         logger.info(f"Request: {request.method} {request.url.path}")
-    
+
     response = await call_next(request)
-    
+
     process_time = time.time() - start_time
-    
-    # Skip logging for health check endpoints
     if request.url.path not in ["/", "/health"]:
-        logger.info(
-            f"Response: {response.status_code} - "
-            f"Completed in {process_time:.2f}s"
-        )
-    
+        logger.info(f"Response: {response.status_code} - Completed in {process_time:.2f}s")
+
     return response
 
-
-# Exception handlers
+# -----------------------------
+# Global exception handler
+# -----------------------------
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler"""
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=500,
@@ -91,15 +95,16 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-
-# Include routers
+# -----------------------------
+# Include API routers
+# -----------------------------
 app.include_router(gemini_router)
 
-
+# -----------------------------
 # Root endpoint
+# -----------------------------
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
@@ -108,27 +113,27 @@ async def root():
         "environment": settings.ENVIRONMENT
     }
 
-
+# -----------------------------
 # Health check endpoint
+# -----------------------------
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {
         "status": "healthy",
         "timestamp": time.time()
     }
 
-
-# Run with uvicorn when executed directly
+# -----------------------------
+# Run app using uvicorn
+# -----------------------------
 if __name__ == "__main__":
     import uvicorn
-    
-    # Get port from settings or default to 8000
+
     port = getattr(settings, 'PORT', 8000)
     host = getattr(settings, 'HOST', '0.0.0.0')
-    
+
     logger.info(f"Starting server on {host}:{port}")
-    
+
     uvicorn.run(
         "app.main:app",
         host=host,

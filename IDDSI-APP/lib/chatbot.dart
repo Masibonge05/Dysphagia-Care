@@ -42,7 +42,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   String _recognizedText = ''; // Store real-time recognized text
 
   // API Configuration
-  static const String apiBaseUrl = 'http://127.0.0.1:8000';
+  static const String apiBaseUrl = 'https://dysphagia-care.onrender.com';
 
   // Color constants
   static const Color primaryPurple = Color(0xFF7A60D6);
@@ -81,17 +81,28 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   // Limit messages
   final Map<String, String> _limitMessages = {
-    'en': 'You have reached your daily limit of 5 messages. Please try again tomorrow.',
-    'af': 'Jy het jou daaglikse limiet van 5 boodskappe bereik. Probeer asseblief môre weer.',
-    'zu': 'Ufinyelele emkhawulweni wakho wansuku zonke wemilayezo emi-5. Sicela uzame kusasa.',
-    'xh': 'Ufikelele kumda wakho wemihla ngemihla weemyalezo ezi-5. Nceda uzame kwakhona ngomso.',
-    'st': 'U fihlile moeding wa hao wa letsatsi ka letsatsi wa melaetsa e 5. Ka kopo leka hape hosane.',
-    'nso': 'O fihlile tekanelong ya gago ya letšatši ka letšatši ya melaetša ye 5. Hle leka gape gosasa.',
-    'tn': 'O fitlhile moleelo wa gago wa letsatsi ka letsatsi wa melaetsa e 5. Tsweetswee leka gape kamoso.',
-    'ss': 'Ufinyele emkhawulweni wakho wemalanga wemilayeto lemi-5. Sicela uzame ngakusasa.',
-    've': 'No swika kha ndinganyiso yanu ya ḓuvha ḽiṅwe na ḽiṅwe ya mafhungo a 5. Ni humbele u lingedza matshelo.',
-    'ts': 'Mi fikele exihelelweni xa n\'wina xa siku rin\'wana na rin\'wana xa switsundzuxo swa 5. Kombela mi ringeta namuntlha.',
-    'nr': 'Ufinyelele emkhawulweni wakho welanga nemilanga yemiyalezo emi-5. Sicela uzame ngakusasa.',
+    'en':
+        'You have reached your daily limit of 5 messages. Please try again tomorrow.',
+    'af':
+        'Jy het jou daaglikse limiet van 5 boodskappe bereik. Probeer asseblief môre weer.',
+    'zu':
+        'Ufinyelele emkhawulweni wakho wansuku zonke wemilayezo emi-5. Sicela uzame kusasa.',
+    'xh':
+        'Ufikelele kumda wakho wemihla ngemihla weemyalezo ezi-5. Nceda uzame kwakhona ngomso.',
+    'st':
+        'U fihlile moeding wa hao wa letsatsi ka letsatsi wa melaetsa e 5. Ka kopo leka hape hosane.',
+    'nso':
+        'O fihlile tekanelong ya gago ya letšatši ka letšatši ya melaetša ye 5. Hle leka gape gosasa.',
+    'tn':
+        'O fitlhile moleelo wa gago wa letsatsi ka letsatsi wa melaetsa e 5. Tsweetswee leka gape kamoso.',
+    'ss':
+        'Ufinyele emkhawulweni wakho wemalanga wemilayeto lemi-5. Sicela uzame ngakusasa.',
+    've':
+        'No swika kha ndinganyiso yanu ya ḓuvha ḽiṅwe na ḽiṅwe ya mafhungo a 5. Ni humbele u lingedza matshelo.',
+    'ts':
+        'Mi fikele exihelelweni xa n\'wina xa siku rin\'wana na rin\'wana xa switsundzuxo swa 5. Kombela mi ringeta namuntlha.',
+    'nr':
+        'Ufinyelele emkhawulweni wakho welanga nemilanga yemiyalezo emi-5. Sicela uzame ngakusasa.',
   };
 
   @override
@@ -178,7 +189,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
       setState(() {
         _selectedLanguageCode = data['languageCode'] ?? 'en';
-        _currentSessionLanguageCode = _selectedLanguageCode; // Initialize session language
+        _currentSessionLanguageCode =
+            _selectedLanguageCode; // Initialize session language
         _selectedLanguage = data['languageName'] ?? 'English';
         _voiceEnabled = data['voiceEnabled'] ?? false;
         _userName = data['name'] ?? 'Friend'; // Get user's name
@@ -202,7 +214,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   void _addGreetingMessage() {
     Future.delayed(const Duration(milliseconds: 500), () {
-      final greetingTemplate = _greetings[_currentSessionLanguageCode] ?? _greetings['en']!;
+      final greetingTemplate =
+          _greetings[_currentSessionLanguageCode] ?? _greetings['en']!;
       final greeting = greetingTemplate.replaceAll('{name}', _userName);
 
       setState(() {
@@ -257,16 +270,19 @@ class _ChatbotPageState extends State<ChatbotPage> {
       });
 
       // Send message to Gemini backend using current session language
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/api/gemini/chat'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'message': text,
-          'language': _currentSessionLanguageCode,
-          'session_id': _sessionId,
-          'user_name': _userName,  // Send user's name for personalized responses
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$apiBaseUrl/api/gemini/chat'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'message': text,
+              'language': _currentSessionLanguageCode,
+              'session_id': _sessionId,
+              'user_name':
+                  _userName, // Send user's name for personalized responses
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -308,7 +324,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
       if (_currentRecordingPath != null) {
         await _audioRecorder.stop();
         // Send the message with both text and audio
-        await _sendMessage(voiceText: _recognizedText, audioPath: _currentRecordingPath);
+        await _sendMessage(
+            voiceText: _recognizedText, audioPath: _currentRecordingPath);
         _currentRecordingPath = null;
         _recognizedText = '';
       }
@@ -440,7 +457,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
                 itemBuilder: (context, index) {
                   final languageCode = _saLanguages.keys.elementAt(index);
                   final languageName = _saLanguages[languageCode]!;
-                  final isSelected = languageCode == _currentSessionLanguageCode;
+                  final isSelected =
+                      languageCode == _currentSessionLanguageCode;
 
                   return ListTile(
                     leading: Icon(
@@ -450,7 +468,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
                     title: Text(
                       languageName,
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                         color: isSelected ? primaryPurple : Colors.black87,
                       ),
                     ),
@@ -472,7 +491,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   void _showLimitDialog() {
-    final message = _limitMessages[_currentSessionLanguageCode] ?? _limitMessages['en']!;
+    final message =
+        _limitMessages[_currentSessionLanguageCode] ?? _limitMessages['en']!;
 
     showDialog(
       context: context,
@@ -547,8 +567,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   Widget _buildHeader() {
     final remaining = 5 - _dailyMessageCount;
-    final currentLanguageName = _saLanguages[_currentSessionLanguageCode] ?? 'English';
-    final isLanguageChanged = _currentSessionLanguageCode != _selectedLanguageCode;
+    final currentLanguageName =
+        _saLanguages[_currentSessionLanguageCode] ?? 'English';
+    final isLanguageChanged =
+        _currentSessionLanguageCode != _selectedLanguageCode;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -627,7 +649,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: secondaryPurple.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -726,9 +749,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser
-                    ? primaryPurple.withOpacity(0.1)
-                    : chatBubbleColor,
+                color:
+                    isUser ? primaryPurple.withOpacity(0.1) : chatBubbleColor,
                 borderRadius: BorderRadius.circular(20),
               ),
               constraints: BoxConstraints(
@@ -827,7 +849,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: _isListening 
+                fillColor: _isListening
                     ? primaryPurple.withOpacity(0.05)
                     : chatBubbleColor,
                 contentPadding: const EdgeInsets.symmetric(
