@@ -12,7 +12,7 @@ git-filter-repo==2.47.0
 grpcio==1.76.0
 h11==0.16.0
 httpcore==1.0.9
-httpx==0.25.2
+httpx>=0.28.1,<1.0.0
 idna==3.10
 isort==6.0.1
 mccabe==0.7.0
@@ -39,7 +39,5 @@ typing_extensions==4.15.0
 urllib3==2.5.0
 uvicorn==0.24.0
 gunicorn==21.2.0
-google-genai==1.45.0
-google-generativeai
-python-dotenv
-streamlit
+google-generativeai>=0.3.0
+streamlit>=1.28.0
