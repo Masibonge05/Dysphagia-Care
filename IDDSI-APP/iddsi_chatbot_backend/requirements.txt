@@ -6,7 +6,7 @@ gunicorn==21.2.0
 # Google Gemini AI
 google-generativeai==0.3.2
 
-# Data Validation - Older version without Rust requirement
+# Data Validation - Pydantic 1.x
 pydantic==1.10.13
 
 # Environment Variables
