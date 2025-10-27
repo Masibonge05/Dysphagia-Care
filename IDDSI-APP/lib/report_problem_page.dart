@@ -271,7 +271,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 15),
                             child: DropdownButtonFormField<String>(
-                              value: _selectedCategory,
+                              initialValue: _selectedCategory,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 prefixIcon: Icon(Icons.category,
