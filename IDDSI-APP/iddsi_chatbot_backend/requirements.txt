@@ -40,7 +40,6 @@ urllib3==2.5.0
 uvicorn==0.24.0
 gunicorn==21.2.0
 google-genai==0.8.5
---upgrade pip
 google-generativeai
 python-dotenv
 streamlit
