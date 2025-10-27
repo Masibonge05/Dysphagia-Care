@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.api.gemini_routes import router as gemini_router
 from app.core.config import settings
 import logging
+import os
 import time
 
 # -----------------------------
@@ -12,7 +13,7 @@ import time
 # -----------------------------
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL, "INFO"),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,8 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"Gemini Model: {settings.GEMINI_MODEL}")
     logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
-    logger.info(f"Server running at http://localhost:8000")
-    logger.info(f"API Documentation: http://localhost:8000/docs")
 
-    # Startup tasks can go here
     yield
-    # Shutdown tasks can go here
     logger.info("Shutting down application")
 
 # -----------------------------
@@ -49,16 +46,18 @@ app = FastAPI(
 # -----------------------------
 # CORS middleware
 # -----------------------------
-# In production, list only allowed origins
+# Allow Flutter web / mobile client
 allowed_origins = [
-    "https://dysphagia-care.onrender.com",  # Flutter Web or other clients
+    "https://dysphagia-care.onrender.com",
+    "http://localhost:3000",  # local dev
+    "*",  # optional, allow all for testing
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],  # OPTIONS, GET, POST, etc.
     allow_headers=["*"],
 )
 
@@ -69,7 +68,6 @@ app.add_middleware(
 async def log_requests(request: Request, call_next):
     start_time = time.time()
 
-    # Skip logging for health check endpoints
     if request.url.path not in ["/", "/health"]:
         logger.info(f"Request: {request.method} {request.url.path}")
 
@@ -129,8 +127,9 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    port = getattr(settings, 'PORT', 8000)
-    host = getattr(settings, 'HOST', '0.0.0.0')
+    # Render sets the PORT env variable dynamically
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0"
 
     logger.info(f"Starting server on {host}:{port}")
 
@@ -139,5 +138,5 @@ if __name__ == "__main__":
         host=host,
         port=port,
         reload=settings.ENVIRONMENT == "development",
-        log_level=settings.LOG_LEVEL.lower() if hasattr(settings.LOG_LEVEL, 'lower') else 'info'
+        log_level=settings.LOG_LEVEL.lower() if hasattr(settings.LOG_LEVEL, "lower") else "info"
     )
