@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 from typing import Optional, Dict, List
 from app.core.config import settings
 from app.core.prompts import get_full_prompt, get_diagnosis_redirect
