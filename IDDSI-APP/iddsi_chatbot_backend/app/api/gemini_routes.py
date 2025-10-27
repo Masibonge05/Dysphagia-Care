@@ -27,11 +27,14 @@ router = APIRouter(prefix="/api/gemini", tags=["Gemini Chat"])
 async def chat(request: ChatMessageRequest):
     """
     Main chat endpoint for IDDSI chatbot
-
+    
     - **message**: User's message (required)
     - **language**: Language code (en, af, zu, xh, st, nso, tn, ss, ve, ts, nr)
     - **session_id**: Session ID for conversation context (required)
     - **user_name**: User's name for personalization (optional)
+    
+    Returns bot response in the specified language, restricted to IDDSI/dysphagia topics.
+    The response will be personalized with the user's name when provided.
     """
     try:
         logger.info(
@@ -54,20 +57,20 @@ async def chat(request: ChatMessageRequest):
             message=request.message,
             language_code=request.language,
             session_id=request.session_id,
-            user_name=request.user_name  # pass user_name
+            user_name=request.user_name  # Pass user name to service
         )
 
         return ChatMessageResponse(
             response=response_text,
             session_id=request.session_id,
             language=request.language,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now()
         )
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in chat endpoint: {str(e)}", exc_info=True)
+        logger.error(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while processing your request"
@@ -81,17 +84,19 @@ async def chat(request: ChatMessageRequest):
 async def health_check():
     """
     Health check endpoint
+    
     Returns the API status and Gemini connection status
     """
     try:
         gemini_healthy = await gemini_service.check_health()
+
         return HealthCheckResponse(
             status="healthy" if gemini_healthy else "degraded",
             version=settings.APP_VERSION,
             gemini_status="connected" if gemini_healthy else "disconnected"
         )
     except Exception as e:
-        logger.error(f"Health check error: {str(e)}", exc_info=True)
+        logger.error(f"Health check error: {str(e)}")
         return HealthCheckResponse(
             status="unhealthy",
             version=settings.APP_VERSION,
@@ -103,13 +108,16 @@ async def health_check():
 async def clear_session(session_id: str):
     """
     Clear session history
+    
     - **session_id**: Session ID to clear
+    
+    This will clear both conversation history and stored user name for the session.
     """
     try:
         gemini_service.clear_session(session_id)
         return {"message": f"Session {session_id} cleared successfully"}
     except Exception as e:
-        logger.error(f"Error clearing session: {str(e)}", exc_info=True)
+        logger.error(f"Error clearing session: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to clear session"

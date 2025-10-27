@@ -75,15 +75,17 @@ def get_language_instruction(language_code: str) -> str:
         'ts': 'Xitsonga',
         'nr': 'isiNdebele',
     }
-    
+
     language_name = language_names.get(language_code, 'English')
-    
     return f"\n\nIMPORTANT: Respond in {language_name}. The user's message is in {language_name}, and your response must also be in {language_name}."
 
 
-def get_full_prompt(language_code: str) -> str:
-    """Get complete system prompt with language instruction"""
-    return IDDSI_SYSTEM_PROMPT + get_language_instruction(language_code)
+def get_full_prompt(language_code: str, user_name: str = None) -> str:
+    """Get complete system prompt with language instruction and optional user personalization"""
+    prompt = IDDSI_SYSTEM_PROMPT + get_language_instruction(language_code)
+    if user_name:
+        prompt += f"\n\nUser name: {user_name}"
+    return prompt
 
 
 # Predefined responses for common redirections
