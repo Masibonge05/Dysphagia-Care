@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 // Assuming CustomGradientAppBar is in level_details.dart or a common file
-import 'package:iddsi_app/level_details.dart'; // Corrected import path
+import 'package:dysphagia_care_app/level_details.dart'; // Corrected import path
 
 class WhatIsIddsiPage extends StatelessWidget {
   const WhatIsIddsiPage({super.key});

@@ -1,5 +1,5 @@
-name: iddsi_app
-description: "IDDSI APP FOR THIRD YEAR 2025 BENG ELECTRICAL AND ELECTRONIC ENGINEERING"
+name: dysphagia_care_app
+description: "Dysphagia Care APP FOR THIRD YEARS 2025 BENG ELECTRICAL AND ELECTRONIC ENGINEERING"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -105,6 +105,8 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/dysphagia_care2.png"
+  image_path: "assets/images/dysphagia_care.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/dysphagia_care2.png"
+  adaptive_icon_foreground: "assets/images/dysphagia_care.png"
+  # For better adaptive icon, you might want to add a separate foreground
+  # adaptive_icon_foreground: "assets/images/dysphagia_care_foreground.png"

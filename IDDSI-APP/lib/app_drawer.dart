@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:iddsi_app/terms_conditions_page.dart';
-import 'package:iddsi_app/about_app_page.dart';
-import 'package:iddsi_app/about_speech_therapists_page.dart';
-import 'package:iddsi_app/report_problem_page.dart';
-import 'package:iddsi_app/faq_page.dart';
+import 'package:dysphagia_care_app/terms_conditions_page.dart';
+import 'package:dysphagia_care_app/about_app_page.dart';
+import 'package:dysphagia_care_app/about_speech_therapists_page.dart';
+import 'package:dysphagia_care_app/report_problem_page.dart';
+import 'package:dysphagia_care_app/faq_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AppDrawer extends StatelessWidget {

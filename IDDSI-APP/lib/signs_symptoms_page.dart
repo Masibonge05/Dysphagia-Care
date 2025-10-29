@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iddsi_app/level_details.dart'; // Corrected import path
+import 'package:dysphagia_care_app/level_details.dart'; // Corrected import path
 
 class SignsSymptomsPage extends StatelessWidget {
   const SignsSymptomsPage({super.key});

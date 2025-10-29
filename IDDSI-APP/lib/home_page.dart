@@ -7,10 +7,10 @@ import 'level_data.dart'; // Import the new level data file
 
 // Imported Pages
 import 'mood_emoji.dart';
-import 'package:iddsi_app/dysphagia_info_page.dart'; // NEW
-import 'package:iddsi_app/tips_adults_page.dart'; // NEW
-import 'package:iddsi_app/user_profile_page.dart'; // NEW
-import 'package:iddsi_app/app_drawer.dart'; // NEW - Separate drawer component
+import 'package:dysphagia_care_app/dysphagia_info_page.dart'; // NEW
+import 'package:dysphagia_care_app/tips_adults_page.dart'; // NEW
+import 'package:dysphagia_care_app/user_profile_page.dart'; // NEW
+import 'package:dysphagia_care_app/app_drawer.dart'; // NEW - Separate drawer component
 
 class HomePage extends StatefulWidget {
   final String userName;
