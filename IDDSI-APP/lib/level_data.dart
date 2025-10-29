@@ -17,9 +17,9 @@ class LevelData {
     required this.foodSuggestions,
   });
 
-  get name => null;
+  Null get name => null;
 
-  get characteristics => null;
+  Null get characteristics => null;
 }
 
 class FoodSuggestion {
@@ -31,7 +31,7 @@ class FoodSuggestion {
     required this.name,
   });
 
-  get icon => null;
+  Null get icon => null;
 
   String? get emoji => null;
 }
