@@ -93,7 +93,7 @@ class AuthService {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
-        await user.updateEmail(newEmail.trim());
+        await user.verifyBeforeUpdateEmail(newEmail.trim());
       } else {
         throw AuthException('No user is currently signed in');
       }

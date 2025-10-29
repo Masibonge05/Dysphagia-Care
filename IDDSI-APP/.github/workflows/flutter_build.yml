@@ -1,0 +1,61 @@
+name: Build Flutter APK (Release)
+
+on:
+  push:
+    tags:
+      - 'v*'   # Triggers only when you push a tag like v1.0.0
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload release artifact
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          name: IDDSI App ${{ github.ref_name }}
+          body: |
+            ## IDDSI Dysphagia Care App
+            
+            ### 📱 Download & Install
+            - Download `app-release.apk` below
+            - Transfer to your Android device
+            - Install (enable "Install from Unknown Sources" if needed)
+            
+            ### ✨ What's New
+            - Built with Flutter
+            - Firebase integration
+            - Latest updates and bug fixes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact (for workflow runs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+

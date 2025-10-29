@@ -1,0 +1,39 @@
+===============================================
+FINAL BUILD COMMANDS - RUN THESE IN POWERSHELL
+===============================================
+
+STEP 1 - Navigate to build directory:
+-------------------------------------------------
+cd C:\build-temp\IDDSI-APP
+
+STEP 2 - Clean:
+-------------------------------------------------
+flutter clean
+
+STEP 3 - Get dependencies (takes 1-2 minutes):
+-------------------------------------------------
+flutter pub get
+
+STEP 4 - Build APK (takes 5-15 minutes):
+-------------------------------------------------
+flutter build apk --release
+
+===============================================
+IMPORTANT: Do not cancel/stop the build process!
+===============================================
+
+Your APK will be at:
+C:\build-temp\IDDSI-APP\build\app\outputs\flutter-apk\app-release.apk
+
+===============================================
+WHAT WAS FIXED:
+===============================================
+✅ Updated speech_to_text to ^6.6.0
+✅ Updated Java to version 17
+✅ Added core library desugaring (version 2.1.4)
+✅ Created google-services.json
+✅ Set dependency overrides for record_platform_interface
+✅ Project copied to path without spaces
+
+===============================================
+

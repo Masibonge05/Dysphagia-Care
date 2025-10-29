@@ -1,0 +1,20 @@
+# Copy and paste these commands in PowerShell to build your APK:
+
+# IMPORTANT: Use the symlink path to avoid spaces in path
+cd C:\Dysphagia-Care\IDDSI-APP
+
+# Clean the project
+flutter clean
+
+# Get dependencies
+flutter pub get
+
+# Build the release APK (use the no-space path)
+cd C:\Dysphagia-Care\IDDSI-APP
+flutter build apk --release
+
+# After build, APK will be at: C:\Dysphagia-Care\IDDSI-APP\build\app\outputs\flutter-apk\app-release.apk
+
+# NOTE: Always use C:\Dysphagia-Care instead of the original path with spaces
+# This symlink was created to avoid Gradle issues with spaces in the path
+

@@ -1,0 +1,83 @@
+name: Build and Release Flutter APK
+
+on:
+  push:
+    branches:
+      - main   # Runs whenever you push to main
+  workflow_dispatch:  # Allows manual trigger from GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run flutter_launcher_icons
+        run: flutter pub run flutter_launcher_icons
+
+      - name: Build Release APK (Split per ABI for faster builds)
+        run: flutter build apk --release --split-per-abi
+
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+          tag_name: release-${{ github.run_number }}
+          name: IDDSI App Release ${{ github.run_number }}
+          body: |
+            ## 🏥 IDDSI Dysphagia Care App
+            
+            **Build:** #${{ github.run_number }}
+            **Commit:** ${{ github.sha }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+            
+            ### 📱 Installation Instructions
+            1. Download `app-release.apk` below
+            2. Transfer to your Android device
+            3. Enable "Install from Unknown Sources" in Settings
+            4. Tap the APK file to install
+            
+            ### ✨ Features
+            - IDDSI Framework Guide
+            - Dysphagia Information
+            - Food & Liquid Testing
+            - AI Chatbot Assistant
+            - Firebase Integration
+            
+            ### 🔧 Latest Updates
+            - Fixed app hanging on Flutter logo
+            - Added better error handling
+            - Updated Firebase packages
+            - New app icon
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+

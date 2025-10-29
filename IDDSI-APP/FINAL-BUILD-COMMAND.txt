@@ -1,0 +1,37 @@
+===============================================
+FINAL BUILD COMMANDS FOR YOUR APK
+===============================================
+
+Copy and paste these commands in PowerShell:
+
+cd C:\build-temp\IDDSI-APP
+flutter clean
+flutter pub get
+flutter build apk --release
+
+===============================================
+WHAT WAS FIXED:
+===============================================
+
+1. ✅ Removed dependency_override issue for record_platform_interface
+2. ✅ Updated desugar_jdk_libs to version 2.1.4
+3. ✅ Enabled core library desugaring
+4. ✅ Created google-services.json file
+5. ✅ Copied project to C:\build-temp\IDDSI-APP (no spaces in path)
+
+===============================================
+YOUR APK WILL BE AT:
+===============================================
+
+C:\build-temp\IDDSI-APP\build\app\outputs\flutter-apk\app-release.apk
+
+===============================================
+IMPORTANT NOTES:
+===============================================
+
+- Always build from C:\build-temp\IDDSI-APP to avoid path space issues
+- After building, you can copy the APK to your original project folder if needed
+- The original project is still at: C:\Users\Njabulo Sibambo 2\OneDrive - University of Johannesburg\Desktop\Dysphagia-Care\IDDSI-APP
+
+===============================================
+

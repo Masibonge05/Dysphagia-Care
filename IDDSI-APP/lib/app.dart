@@ -20,8 +20,13 @@ import 'home_page.dart'; // Add import for HomePage
 
 class IDDSIApp extends StatelessWidget {
   final bool hasSeenWelcome;
+  final bool firebaseInitialized;
 
-  const IDDSIApp({super.key, required this.hasSeenWelcome});
+  const IDDSIApp({
+    super.key, 
+    required this.hasSeenWelcome,
+    this.firebaseInitialized = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +40,10 @@ class IDDSIApp extends StatelessWidget {
         ),
       ),
       // Use AuthenticationWrapper as home instead of initialRoute
-      home: AuthenticationWrapper(hasSeenWelcome: hasSeenWelcome),
+      home: AuthenticationWrapper(
+        hasSeenWelcome: hasSeenWelcome,
+        firebaseInitialized: firebaseInitialized,
+      ),
       routes: {
         '/home': (context) => const HomePage(userName: 'User', currentLevel: 3),
         '/personalInfo': (context) => const IDDSIPersonalInfoPage(),
@@ -176,8 +184,13 @@ class IDDSIApp extends StatelessWidget {
 /// Authentication Wrapper - Handles persistent login and routing
 class AuthenticationWrapper extends StatelessWidget {
   final bool hasSeenWelcome;
+  final bool firebaseInitialized;
 
-  const AuthenticationWrapper({super.key, required this.hasSeenWelcome});
+  const AuthenticationWrapper({
+    super.key, 
+    required this.hasSeenWelcome,
+    this.firebaseInitialized = true,
+  });
 
   /// Check if user has completed personal info registration
   Future<bool> _hasCompletedPersonalInfo(String userId) async {
@@ -205,9 +218,70 @@ class AuthenticationWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // If Firebase is not initialized, skip authentication and go directly to welcome/login
+    if (!firebaseInitialized) {
+      debugPrint('⚠️ Firebase not initialized - showing app without authentication');
+      // Show a brief message then navigate
+      Future.delayed(const Duration(seconds: 1), () {
+        if (context.mounted) {
+          if (hasSeenWelcome) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => Welcome1(
+                  onNext: () {
+                    Navigator.pushNamed(context, '/welcome2');
+                  },
+                ),
+              ),
+            );
+          }
+        }
+      });
+      
+      return Scaffold(
+        backgroundColor: const Color(0xFF1F41BB),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 20),
+              Text(
+                firebaseInitialized 
+                  ? 'Connecting...' 
+                  : 'Starting app...',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // Handle errors - if Firebase isn't working, show login/welcome
+        if (snapshot.hasError) {
+          debugPrint('❌ Auth stream error: ${snapshot.error}');
+          // If there's an error, treat as not signed in
+          if (hasSeenWelcome) {
+            return const LoginPage();
+          } else {
+            return Welcome1(
+              onNext: () {
+                Navigator.pushNamed(context, '/welcome2');
+              },
+            );
+          }
+        }
+
         // Show loading while checking authentication
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -226,6 +300,13 @@ class AuthenticationWrapper extends StatelessWidget {
           return FutureBuilder<bool>(
             future: _hasCompletedPersonalInfo(user.uid),
             builder: (context, personalInfoSnapshot) {
+              // Handle errors when checking personal info
+              if (personalInfoSnapshot.hasError) {
+                debugPrint('❌ Error checking personal info: ${personalInfoSnapshot.error}');
+                // On error, assume personal info not complete
+                return const IDDSIPersonalInfoPage();
+              }
+
               // Show loading while checking personal info
               if (personalInfoSnapshot.connectionState ==
                   ConnectionState.waiting) {
@@ -241,45 +322,28 @@ class AuthenticationWrapper extends StatelessWidget {
               // Check if user has completed personal info
               final hasPersonalInfo = personalInfoSnapshot.data ?? false;
 
-              // Route to appropriate page
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (hasPersonalInfo) {
-                  // User has personal info - go to home page
-                  Navigator.pushReplacementNamed(context, '/home');
-                } else {
-                  // User needs to complete personal info
-                  Navigator.pushReplacementNamed(context, '/personalInfo');
-                }
-              });
-
-              // Return loading screen while navigation happens
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF1F41BB),
-                  ),
-                ),
-              );
+              // Route to appropriate page directly
+              if (hasPersonalInfo) {
+                // User has personal info - go to home page
+                return const HomePage(userName: 'User', currentLevel: 3);
+              } else {
+                // User needs to complete personal info
+                return const IDDSIPersonalInfoPage();
+              }
             },
           );
         }
 
         // User is not signed in - check if they've seen welcome screen
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (hasSeenWelcome) {
-            Navigator.pushReplacementNamed(context, '/signin');
-          } else {
-            Navigator.pushReplacementNamed(context, '/welcome1');
-          }
-        });
-
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF1F41BB),
-            ),
-          ),
-        );
+        if (hasSeenWelcome) {
+          return const LoginPage();
+        } else {
+          return Welcome1(
+            onNext: () {
+              Navigator.pushNamed(context, '/welcome2');
+            },
+          );
+        }
       },
     );
   }

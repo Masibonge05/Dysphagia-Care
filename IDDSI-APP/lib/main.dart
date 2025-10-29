@@ -20,7 +20,8 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase for web and mobile
+  // Initialize Firebase for web and mobile with timeout
+  bool firebaseInitialized = false;
   try {
     if (kIsWeb) {
       await Firebase.initializeApp(
@@ -32,102 +33,134 @@ Future<void> main() async {
           messagingSenderId: "844640842201",
           appId: "1:844640842201:web:903d21c590150b6d5be9c8",
         ),
+      ).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          debugPrint('⚠️ Firebase initialization timed out - continuing without Firebase');
+          throw Exception('Firebase initialization timeout');
+        },
       );
     } else {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          debugPrint('⚠️ Firebase initialization timed out - continuing without Firebase');
+          throw Exception('Firebase initialization timeout');
+        },
+      );
     }
+    firebaseInitialized = true;
     debugPrint('✅ Firebase initialized successfully');
   } catch (e) {
-    debugPrint('❌ Error initializing Firebase: $e');
+    debugPrint('❌ Error initializing Firebase: $e - App will continue without Firebase features');
+    firebaseInitialized = false;
+    // Continue anyway - the app will handle authentication errors gracefully
   }
 
-  // Request permissions for iOS and macOS (mobile only)
-  if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-  }
-
-  // Initialize local notifications (mobile only)
-  if (!kIsWeb) {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
-
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-    // Set background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  }
-
-  // Subscribe to topic for receiving notifications (mobile only)
-  if (!kIsWeb) {
-    try {
-      await FirebaseMessaging.instance.subscribeToTopic('foodUpdates');
-      debugPrint('✅ Subscribed to foodUpdates topic');
-    } catch (e) {
-      debugPrint('❌ Error subscribing to topic: $e');
-    }
-  } else {
-    debugPrint('ℹ️ Web platform - skipping topic subscription');
-  }
-
-  // Listen for foreground messages to show local notifications (mobile only)
-  if (!kIsWeb) {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'iddsi_channel', // channel ID
-              'IDDSI Notifications', // channel name
-              importance: Importance.max,
-              priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
-            ),
-          ),
+  // Only initialize Firebase-dependent features if Firebase initialized successfully
+  if (firebaseInitialized) {
+    // Request permissions for iOS and macOS (mobile only)
+    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+      try {
+        await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
         );
+      } catch (e) {
+        debugPrint('❌ Error requesting permissions: $e');
       }
-    });
-  }
+    }
 
-  // Get and print the FCM token
-  String? token;
-  if (!kIsWeb) {
-    try {
-      token = await FirebaseMessaging.instance.getToken();
-      debugPrint('📲 FCM Token: $token');
-    } catch (e) {
-      debugPrint('❌ Error getting FCM token: $e');
+    // Initialize local notifications (mobile only)
+    if (!kIsWeb) {
+      try {
+        const AndroidInitializationSettings initializationSettingsAndroid =
+            AndroidInitializationSettings('@mipmap/ic_launcher');
+
+        const InitializationSettings initializationSettings = InitializationSettings(
+          android: initializationSettingsAndroid,
+        );
+
+        await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+        // Set background message handler
+        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      } catch (e) {
+        debugPrint('❌ Error initializing notifications: $e');
+      }
+    }
+
+    // Subscribe to topic for receiving notifications (mobile only)
+    if (!kIsWeb) {
+      try {
+        await FirebaseMessaging.instance.subscribeToTopic('foodUpdates');
+        debugPrint('✅ Subscribed to foodUpdates topic');
+      } catch (e) {
+        debugPrint('❌ Error subscribing to topic: $e');
+      }
+    } else {
+      debugPrint('ℹ️ Web platform - skipping topic subscription');
+    }
+
+    // Listen for foreground messages to show local notifications (mobile only)
+    if (!kIsWeb) {
+      try {
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          RemoteNotification? notification = message.notification;
+          AndroidNotification? android = message.notification?.android;
+
+          if (notification != null && android != null) {
+            flutterLocalNotificationsPlugin.show(
+              notification.hashCode,
+              notification.title,
+              notification.body,
+              const NotificationDetails(
+                android: AndroidNotificationDetails(
+                  'iddsi_channel', // channel ID
+                  'IDDSI Notifications', // channel name
+                  importance: Importance.max,
+                  priority: Priority.high,
+                  icon: '@mipmap/ic_launcher',
+                ),
+              ),
+            );
+          }
+        });
+      } catch (e) {
+        debugPrint('❌ Error setting up message listener: $e');
+      }
+    }
+
+    // Get and print the FCM token
+    if (!kIsWeb) {
+      try {
+        String? token = await FirebaseMessaging.instance.getToken();
+        debugPrint('📲 FCM Token: $token');
+      } catch (e) {
+        debugPrint('❌ Error getting FCM token: $e');
+      }
+    } else {
+      debugPrint('ℹ️ Web platform - FCM token requires VAPID key');
     }
   } else {
-    // For web, you'll need a VAPID key to get FCM token
-    // Uncomment and add your VAPID key if you need web push notifications
-    // try {
-    //   token = await FirebaseMessaging.instance.getToken(vapidKey: 'your-vapid-key');
-    //   if (token != null) {
-    //     debugPrint('📲 Web FCM Token: $token');
-    //   }
-    // } catch (e) {
-    //   debugPrint('❌ Error getting web FCM token: $e');
-    // }
-    debugPrint('ℹ️ Web platform - FCM token requires VAPID key');
+    debugPrint('⚠️ Skipping Firebase-dependent initialization');
   }
 
   // Load if user has seen welcome screen before
-  final prefs = await SharedPreferences.getInstance();
-  final hasSeenWelcome = prefs.getBool('hasSeenWelcome') ?? false;
+  bool hasSeenWelcome = false;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    hasSeenWelcome = prefs.getBool('hasSeenWelcome') ?? false;
+  } catch (e) {
+    debugPrint('❌ Error loading preferences: $e');
+    hasSeenWelcome = false;
+  }
 
-  runApp(IDDSIApp(hasSeenWelcome: hasSeenWelcome));
+  debugPrint('🚀 Starting app - hasSeenWelcome: $hasSeenWelcome, firebaseInitialized: $firebaseInitialized');
+  
+  runApp(IDDSIApp(
+    hasSeenWelcome: hasSeenWelcome,
+    firebaseInitialized: firebaseInitialized,
+  ));
 }
