@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'language_selection.dart';
 
 class IDDSIPersonalInfoPage extends StatefulWidget {
   const IDDSIPersonalInfoPage({super.key});
@@ -17,6 +18,7 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
 
   String? selectedLevel;
   bool isLoading = false;
+  bool isCheckingData = true;
 
   // All level options combined
   final List<Map<String, dynamic>> allLevels = [
@@ -83,10 +85,69 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkExistingData();
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
     super.dispose();
+  }
+
+  // Check if user has already completed personal info
+  Future<void> _checkExistingData() async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        if (mounted) {
+          setState(() {
+            isCheckingData = false;
+          });
+          _showError('Please login first');
+        }
+        return;
+      }
+
+      // Check if user document exists and has personal info
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        if (data != null &&
+            data.containsKey('name') &&
+            data.containsKey('age') &&
+            data.containsKey('selectedLevel')) {
+          // User already has personal info, navigate to language selection
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LanguageSelectionPage(),
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      // No personal info yet, show form
+      if (mounted) {
+        setState(() {
+          isCheckingData = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isCheckingData = false;
+        });
+        _showError('Error checking data: ${e.toString()}');
+      }
+    }
   }
 
   Future<void> _savePersonalInfo() async {
@@ -152,8 +213,13 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
             ),
           );
 
-          // Navigate to home page after successful save
-          Navigator.pushReplacementNamed(context, '/home');
+          // Navigate to language selection page after successful save
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LanguageSelectionPage(),
+            ),
+          );
         }
       } else {
         throw Exception('User not authenticated');
@@ -174,6 +240,15 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
         });
       }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   Widget _buildRadioGroup(String title, List<Map<String, dynamic>> options) {
@@ -228,6 +303,34 @@ class _IDDSIPersonalInfoPageState extends State<IDDSIPersonalInfoPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Show loading screen while checking for existing data
+    if (isCheckingData) {
+      return Scaffold(
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: Image.asset(
+                  'assets/images/background.png',
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: const Color(0xFFE3F2FD),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF01224F),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     // Filter levels by category for display
     final fluidLevels =
         allLevels.where((level) => level['category'] == 'Fluids').toList();

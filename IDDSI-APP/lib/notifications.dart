@@ -13,6 +13,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   String? _currentUserId;
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = true;
+  String? _expandedNotificationId;
 
   @override
   void initState() {
@@ -66,7 +67,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('All notifications marked as read'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF44157F),
         ),
       );
     } catch (e) {
@@ -80,34 +81,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  IconData _getNotificationIcon(String changeType) {
+  Color _getNotificationColor(String changeType) {
+    // Professional muted colors for a clean look
     switch (changeType.toLowerCase()) {
       case 'added':
-        return Icons.add_circle;
+        return const Color(0xFF44157F); // Primary purple
       case 'deleted':
-        return Icons.delete;
+        return const Color(0xFF6B7280); // Muted gray
       case 'updated':
-        return Icons.edit;
+        return const Color(0xFF7A60D6); // Secondary purple
       default:
-        return Icons.notifications;
+        return const Color(0xFF44157F); // Primary purple
     }
   }
 
-  Color _getNotificationColor(String changeType) {
+  String _getChangeTypeText(String changeType) {
     switch (changeType.toLowerCase()) {
       case 'added':
-        return Colors.green;
+        return 'Added';
       case 'deleted':
-        return Colors.red;
+        return 'Removed';
       case 'updated':
-        return Colors.orange;
+        return 'Updated';
       default:
-        return const Color(0xFF6366F1);
+        return 'Update';
     }
   }
 
   String _formatTimestamp(Timestamp? timestamp) {
-    if (timestamp == null) return 'Unknown time';
+    if (timestamp == null) return 'Recently';
 
     try {
       DateTime dateTime = timestamp.toDate();
@@ -126,8 +128,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return 'Just now';
       }
     } catch (e) {
-      return 'Unknown time';
+      return 'Recently';
     }
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF6B7280),
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[800],
+            height: 1.6,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -142,15 +171,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         child: Column(
           children: [
-            // Header with gradient
+            // Header with professional gradient
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF6366F1),
-                    Color(0xFF8B5CF6),
+                    Color(0xFF44157F),
+                    Color(0xFF7A60D6),
                   ],
                 ),
                 borderRadius: BorderRadius.only(
@@ -172,7 +201,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.arrow_back,
@@ -189,6 +218,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 color: Colors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
@@ -213,7 +243,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: hasUnread
-                                        ? Colors.white.withOpacity(0.2)
+                                        ? Colors.white.withOpacity(0.25)
                                         : Colors.white.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -221,8 +251,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     hasUnread ? 'Mark all read' : 'All read',
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
                                 ),
@@ -242,7 +273,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               child: _isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF6366F1),
+                        color: Color(0xFF44157F),
                       ),
                     )
                   : _currentUserId == null
@@ -259,34 +290,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           stream: FirebaseFirestore.instance
                               .collection('notifications')
                               .where('userId', isEqualTo: _currentUserId)
+                              .orderBy('timestamp', descending: true)
                               .snapshots(),
                           builder: (context, snapshot) {
-                            print('Stream state: ${snapshot.connectionState}');
-                            print('Current user ID: $_currentUserId');
-
-                            if (!snapshot.hasData) {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFF6366F1),
-                                ),
-                              );
-                            }
-
-                            if (snapshot.hasData) {
-                              print(
-                                  'Found ${snapshot.data!.docs.length} notifications');
-                            }
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFF6366F1),
+                                  color: Color(0xFF44157F),
                                 ),
                               );
                             }
 
                             if (snapshot.hasError) {
-                              print('Firestore error: ${snapshot.error}');
                               return Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -297,21 +313,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                       color: Colors.grey[400],
                                     ),
                                     const SizedBox(height: 16),
-                                    Text(
-                                      'Error: ${snapshot.error}',
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                    const Text(
+                                      'Error loading notifications',
+                                      style: TextStyle(
+                                        fontSize: 16,
                                         color: Colors.red,
                                       ),
                                       textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'User ID: $_currentUserId',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
                                     ),
                                   ],
                                 ),
@@ -320,15 +328,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                             if (!snapshot.hasData ||
                                 snapshot.data!.docs.isEmpty) {
-                              print(
-                                  'No notifications found for user: $_currentUserId');
                               return Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      Icons.notifications_none,
-                                      size: 120,
+                                      Icons.notifications_none_outlined,
+                                      size: 100,
                                       color: Colors.grey[300],
                                     ),
                                     const SizedBox(height: 24),
@@ -342,23 +348,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     const Text(
-                                      'You\'ll see updates about food changes here',
+                                      'You\'ll receive updates about food changes here',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 16),
                                   ],
                                 ),
                               );
                             }
 
                             return RefreshIndicator(
-                              color: const Color(0xFF6366F1),
+                              color: const Color(0xFF44157F),
                               onRefresh: () async {
-                                // Refresh is automatic with StreamBuilder
                                 await Future.delayed(
                                     const Duration(milliseconds: 500));
                               },
@@ -371,13 +375,51 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   var data = doc.data() as Map<String, dynamic>;
 
                                   String changeType =
-                                      data['changeType'] ?? 'unknown';
+                                      data['changeType'] ?? 'update';
                                   String foodName =
                                       data['foodName'] ?? 'Unknown Food';
-                                  String message =
-                                      data['message'] ?? 'No message';
                                   bool isRead = data['read'] ?? false;
                                   Timestamp? timestamp = data['timestamp'];
+                                  String? iddsiLevel = data['iddsiLevel'];
+                                  String? oldLevel = data['oldLevel'];
+                                  String? category = data['category'];
+                                  String? description = data['description'];
+                                  String? preparation = data['preparation'];
+                                  String? texture = data['texture'];
+
+                                  // Generate formal message based on change type
+                                  String message;
+                                  switch (changeType.toLowerCase()) {
+                                    case 'added':
+                                      message = iddsiLevel != null
+                                          ? '$foodName was added to Level $iddsiLevel'
+                                          : '$foodName was added';
+                                      break;
+                                    case 'deleted':
+                                      message = '$foodName was deleted';
+                                      break;
+                                    case 'updated':
+                                      if (oldLevel != null &&
+                                          iddsiLevel != null) {
+                                        message =
+                                            '$foodName\'s level was changed from Level $oldLevel to Level $iddsiLevel';
+                                      } else {
+                                        message = '$foodName was updated';
+                                      }
+                                      break;
+                                    default:
+                                      message = data['message'] ??
+                                          data['body'] ??
+                                          '$foodName was modified';
+                                  }
+
+                                  bool isExpanded =
+                                      _expandedNotificationId == doc.id;
+                                  bool hasDetails = (description != null &&
+                                          description.isNotEmpty) ||
+                                      (preparation != null &&
+                                          preparation.isNotEmpty) ||
+                                      (texture != null && texture.isNotEmpty);
 
                                   return Dismissible(
                                     key: Key(doc.id),
@@ -388,10 +430,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     background: Container(
                                       alignment: Alignment.centerRight,
                                       padding: const EdgeInsets.only(right: 20),
-                                      margin: const EdgeInsets.only(bottom: 12),
+                                      margin: const EdgeInsets.only(bottom: 16),
                                       decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(16),
+                                        color: const Color(0xFF44157F),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Row(
                                         mainAxisAlignment:
@@ -402,12 +444,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.w600,
+                                              fontSize: 14,
                                             ),
                                           ),
                                           SizedBox(width: 8),
                                           Icon(
-                                            Icons.check,
+                                            Icons.check_circle_outline,
                                             color: Colors.white,
+                                            size: 20,
                                           ),
                                         ],
                                       ),
@@ -417,106 +461,290 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         if (!isRead) {
                                           _markAsRead(doc.id);
                                         }
+                                        if (hasDetails) {
+                                          setState(() {
+                                            _expandedNotificationId =
+                                                isExpanded ? null : doc.id;
+                                          });
+                                        }
                                       },
                                       child: Container(
                                         margin:
-                                            const EdgeInsets.only(bottom: 12),
-                                        padding: const EdgeInsets.all(16),
+                                            const EdgeInsets.only(bottom: 16),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                              BorderRadius.circular(16),
-                                          border: Border.all(
-                                            color: isRead
-                                                ? Colors.grey.withOpacity(0.2)
-                                                : const Color(0xFF6366F1)
-                                                    .withOpacity(0.3),
-                                            width: isRead ? 1 : 2,
-                                          ),
+                                              BorderRadius.circular(12),
+                                          border: isRead
+                                              ? null
+                                              : Border.all(
+                                                  color: const Color(0xFF44157F)
+                                                      .withOpacity(0.2),
+                                                  width: 1.5,
+                                                ),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black
-                                                  .withOpacity(0.05),
+                                                  .withOpacity(0.04),
                                               spreadRadius: 0,
-                                              blurRadius: 8,
+                                              blurRadius: 10,
                                               offset: const Offset(0, 2),
                                             ),
                                           ],
                                         ),
-                                        child: Row(
+                                        child: Column(
                                           children: [
-                                            // Icon container
-                                            Container(
-                                              width: 48,
-                                              height: 48,
-                                              decoration: BoxDecoration(
-                                                color: _getNotificationColor(
-                                                        changeType)
-                                                    .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(24),
-                                              ),
-                                              child: Icon(
-                                                _getNotificationIcon(
-                                                    changeType),
-                                                color: _getNotificationColor(
-                                                    changeType),
-                                                size: 24,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-
-                                            // Content
-                                            Expanded(
+                                            Padding(
+                                              padding: const EdgeInsets.all(20),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
+                                                  // Header row with badge and status
+                                                  Row(
+                                                    children: [
+                                                      // Change type badge - professional and subtle
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 6,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              _getNotificationColor(
+                                                                      changeType)
+                                                                  .withOpacity(
+                                                                      0.1),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(6),
+                                                        ),
+                                                        child: Text(
+                                                          _getChangeTypeText(
+                                                                  changeType)
+                                                              .toUpperCase(),
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color:
+                                                                _getNotificationColor(
+                                                                    changeType),
+                                                            letterSpacing: 0.5,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                      // Timestamp
+                                                      Text(
+                                                        _formatTimestamp(
+                                                            timestamp),
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color:
+                                                              Colors.grey[500],
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      // Unread indicator
+                                                      if (!isRead)
+                                                        Container(
+                                                          width: 8,
+                                                          height: 8,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: const Color(
+                                                                0xFF44157F),
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 16),
+
+                                                  // Main message - clean and professional
                                                   Text(
-                                                    foodName,
+                                                    message,
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       fontWeight: isRead
                                                           ? FontWeight.w500
-                                                          : FontWeight.w700,
+                                                          : FontWeight.w600,
                                                       color: const Color(
-                                                          0xFF374151),
+                                                          0xFF1F2937),
+                                                      height: 1.5,
+                                                      letterSpacing: 0.2,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    message,
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: isRead
-                                                          ? Colors.grey[600]
-                                                          : const Color(
-                                                              0xFF6B7280),
-                                                      fontWeight: isRead
-                                                          ? FontWeight.normal
-                                                          : FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Text(
-                                                    _formatTimestamp(timestamp),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey[500],
-                                                    ),
+                                                  const SizedBox(height: 12),
+
+                                                  // Category and Level badges - inline
+                                                  Row(
+                                                    children: [
+                                                      if (category != null) ...[
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 5,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: const Color(
+                                                                    0xFF44157F)
+                                                                .withOpacity(
+                                                                    0.08),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        6),
+                                                          ),
+                                                          child: Text(
+                                                            category
+                                                                .toUpperCase(),
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              color: Color(
+                                                                  0xFF44157F),
+                                                              letterSpacing:
+                                                                  0.5,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 8),
+                                                      ],
+                                                      if (iddsiLevel !=
+                                                          null) ...[
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 5,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: const Color(
+                                                                    0xFF7A60D6)
+                                                                .withOpacity(
+                                                                    0.1),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        6),
+                                                          ),
+                                                          child: Text(
+                                                            'LEVEL $iddsiLevel',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              color: Color(
+                                                                  0xFF7A60D6),
+                                                              letterSpacing:
+                                                                  0.5,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      const Spacer(),
+                                                      // Details hint
+                                                      if (hasDetails)
+                                                        Text(
+                                                          isExpanded
+                                                              ? 'Tap to collapse'
+                                                              : 'Tap to view details',
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            color: Colors
+                                                                .grey[500],
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                          ),
+                                                        ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
                                             ),
 
-                                            // Read indicator
-                                            if (!isRead)
+                                            // Expandable details section - professional styling
+                                            if (isExpanded && hasDetails)
                                               Container(
-                                                width: 8,
-                                                height: 8,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF6366F1),
-                                                  shape: BoxShape.circle,
+                                                width: double.infinity,
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      const Color(0xFFF9FAFB),
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                    bottomLeft:
+                                                        Radius.circular(12),
+                                                    bottomRight:
+                                                        Radius.circular(12),
+                                                  ),
+                                                  border: Border(
+                                                    top: BorderSide(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.15),
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'FOOD DETAILS',
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color:
+                                                            Color(0xFF44157F),
+                                                        letterSpacing: 1.0,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    if (description != null &&
+                                                        description
+                                                            .isNotEmpty) ...[
+                                                      _buildDetailRow(
+                                                          'Description',
+                                                          description),
+                                                      const SizedBox(
+                                                          height: 12),
+                                                    ],
+                                                    if (texture != null &&
+                                                        texture.isNotEmpty) ...[
+                                                      _buildDetailRow(
+                                                          'Texture', texture),
+                                                      const SizedBox(
+                                                          height: 12),
+                                                    ],
+                                                    if (preparation != null &&
+                                                        preparation
+                                                            .isNotEmpty) ...[
+                                                      _buildDetailRow(
+                                                          'Preparation',
+                                                          preparation),
+                                                    ],
+                                                  ],
                                                 ),
                                               ),
                                           ],

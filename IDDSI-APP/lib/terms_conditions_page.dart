@@ -68,7 +68,7 @@ class TermsConditionsPage extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Last Updated: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
+                'Last Updated: 2025/10/14',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
