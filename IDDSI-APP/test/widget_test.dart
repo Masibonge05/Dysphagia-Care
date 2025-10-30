@@ -9,22 +9,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dysphagia_care_app/app.dart';
 
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const IDDSIApp());
+  testWidgets('App initializes correctly', (WidgetTester tester) async {
+    // Build our app and trigger a frame with required parameters
+    await tester.pumpWidget(
+      const IDDSIApp(
+        hasSeenWelcome: false,
+        firebaseInitialized: false,
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify the app loads without errors
+    expect(find.byType(MaterialApp), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Wait for any animations or async operations to complete
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Add your specific widget tests here based on your app's content
+    // For example, if you have a welcome screen when hasSeenWelcome is false:
+    // expect(find.text('Welcome'), findsOneWidget);
+  });
+
+  testWidgets('App with welcome screen seen', (WidgetTester tester) async {
+    // Test the app when user has already seen the welcome screen
+    await tester.pumpWidget(
+      const IDDSIApp(
+        hasSeenWelcome: true,
+        firebaseInitialized: true,
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Verify the app navigates to the main screen
+    // Add assertions based on your app's routing logic
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
