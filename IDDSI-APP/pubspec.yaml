@@ -1,5 +1,5 @@
 name: dysphagia_care_app
-description: "Dysphagia Care APP FOR THIRD YEARS 2025 BENG ELECTRICAL AND ELECTRONIC ENGINEERING"
+description: "Dysphagia Care App - IDDSI Management System for Electrical and Electronic Engineering 2025"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,33 +11,46 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # UI Components
   flutter_svg: ^2.0.9
-  http: ^1.1.0
-  email_validator: ^3.0.0
+  cupertino_icons: ^1.0.6
   lottie: ^3.3.2
-  timeago: ^3.4.0
 
+  # Networking
+  http: ^1.1.0
+
+  # Validation
+  email_validator: ^3.0.0
+
+  # Utilities
+  timeago: ^3.4.0
+  provider: ^6.1.1
+  shared_preferences: ^2.3.0
+  path_provider: ^2.1.4
+
+  # Firebase
   firebase_core: ^4.2.0
   firebase_auth: ^6.1.1
   firebase_auth_web: ^6.0.4
-  shared_preferences: ^2.3.0
   cloud_firestore: ^6.0.3
   firebase_messaging: ^16.0.3
-  flutter_local_notifications: ^19.5.0
+  firebase_storage: ^13.0.3
   cloud_functions: ^6.0.3
+  
+  # Notifications
+  flutter_local_notifications: ^19.5.0
 
-  js: ^0.7.2
-  provider: ^6.1.1
-  cupertino_icons: ^1.0.6
+  # Audio and Speech
   flutter_tts: ^4.2.3
   speech_to_text: ^7.0.0
-  
-  # Audio and media packages
   record: ^5.1.2
-  path_provider: ^2.1.4
   audioplayers: ^6.0.0
-  firebase_storage: ^13.0.3
+
+  # Media
   image_picker: ^1.0.7
+
+  # Web compatibility
+  js: ^0.7.2
 
 dev_dependencies:
   flutter_test:
@@ -52,14 +65,15 @@ dependency_overrides:
   web: ^1.0.0
   firebase_core_platform_interface: ^6.0.0
 
-
-
 flutter:
   uses-material-design: true
 
+  # Asset Configuration
+  # Note: Directory entries (ending with /) include all files in that directory
+  # Individual file entries are also listed for clarity
   assets:
+    # Root level assets
     - assets/iddsi-logo.png
-    - assets/food/
     - assets/speech.logo.png
     - assets/background.png
     - assets/menu_icon.svg
@@ -69,15 +83,24 @@ flutter:
     - assets/dysphagia_icon.svg
     - assets/symptoms_icon.svg
     - assets/disclaimer_icon.svg
+    
+    # Images directory
+    - assets/images/dysphagia_care.png
     - assets/images/background.png
+    - assets/images/background2.png
     - assets/images/chat.png
     - assets/images/kid.png
     - assets/images/oldman.png
+    - assets/images/logo_new.png
+    
+    # Food images directory
     - assets/food/custard.png
     - assets/food/liquidised_shicken_soup.png
     - assets/food/mageu.png
     - assets/food/pureed_vegetable_curry.png
     - assets/food/smooth_maize_porride.png
+    
+    # Icons directory
     - assets/icons/Account.svg
     - assets/icons/arrow1.svg
     - assets/icons/framework_h.svg
@@ -87,19 +110,22 @@ flutter:
     - assets/icons/profile.svg
     - assets/icons/testing.svg
     - assets/icons/top_menu.svg
-    - assets/images/background2.png
-    - assets/images/logo_new.png
-    - assets/images/dysphagia_care.png
+    
+    # Animations directory
     - assets/animations/angry.json
     - assets/animations/sad.json
     - assets/animations/neutral.json
     - assets/animations/happy.json
     - assets/animations/superMood.json
+    
+    # Include all files from subdirectories
+    # (This ensures any new files added are automatically included)
     - assets/
     - assets/images/
     - assets/food/
     - assets/icons/
     - assets/icons_sm/
+    - assets/animations/
 
 # Flutter Launcher Icons Configuration
 flutter_launcher_icons:
@@ -108,5 +134,9 @@ flutter_launcher_icons:
   image_path: "assets/images/dysphagia_care.png"
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/dysphagia_care.png"
-  # For better adaptive icon, you might want to add a separate foreground
+  
+  # Optional: Uncomment and create a separate foreground image for better adaptive icon
   # adaptive_icon_foreground: "assets/images/dysphagia_care_foreground.png"
+  
+  # iOS specific settings
+  remove_alpha_ios: true
