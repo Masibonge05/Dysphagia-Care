@@ -1,22 +1,20 @@
+// Project-level build.gradle
 buildscript {
-ext.kotlin_version = '2.1.0' // updated Kotlin version
+    ext.kotlin_version = '1.9.0' // Stable Kotlin
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Android Gradle Plugin (AGP) for Flutter 3.35
-     classpath 'com.android.tools.build:gradle:8.1.0'
+        // Android Gradle Plugin compatible with Java 17
+        classpath 'com.android.tools.build:gradle:8.5.2'
 
-
-        // Kotlin plugin
+        // Kotlin Gradle plugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        // Google services plugin for Firebase
-        classpath 'com.google.gms:google-services:4.4.0'
-        
+        // Google Services plugin for Firebase
+        classpath 'com.google.gms:google-services:4.4.2'
     }
-
 }
 
 allprojects {
